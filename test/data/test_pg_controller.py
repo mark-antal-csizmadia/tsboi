@@ -1,5 +1,6 @@
-import pytest
 from pathlib import Path
+import shutil
+import pytest
 
 from tsboi.data.pg_controller import PostgresController
 from settings import PG_DATABASE, PG_USER, PG_PASSWORD
@@ -136,4 +137,4 @@ def test_get_ohlcv_records(pg_controller, test_data):
     pg_controller.open_connection()
     pg_controller.cursor.execute("DROP TABLE test_table")
     pg_controller.close_connection()
-
+    shutil.rmtree("test_data")
