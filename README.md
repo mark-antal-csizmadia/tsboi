@@ -9,6 +9,7 @@ Create virtual environment (Python version 3.9 is tested) with preferably [Minic
 ```bash
 conda create -n tsboi-env python=3.9
 conda activate tsboi-env
+pip install pip-tools
 pip-compile -o requirements.txt requirements.in
 pip install -r requirements.txt
 ```
