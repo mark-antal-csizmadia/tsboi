@@ -13,3 +13,13 @@ pip install pip-tools
 pip-compile -o requirements.txt requirements.in
 pip install -r requirements.txt
 ```
+
+For all scripts and tests, it is assumed that there exists a Posgres server running locally on port 5432 with a database named `PG_DATABASE`, a user named `PG_USER` with password `PG_PASSWORD`. These can be set as environment variables or in a `.env` file in the root directory of the project.
+
+## Tests
+
+Run tests with:
+
+```bash
+python -m pytest -s
+```
