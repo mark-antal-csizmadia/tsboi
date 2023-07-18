@@ -89,6 +89,8 @@ entrypoints==0.4
     # via mlflow
 ephem==4.1.4
     # via lunarcalendar
+exceptiongroup==1.1.2
+    # via pytest
 executing==1.2.0
     # via stack-data
 filelock==3.12.2
@@ -140,6 +142,8 @@ importlib-resources==6.0.0
     # via
     #   matplotlib
     #   prophet
+iniconfig==2.0.0
+    # via pytest
 ipykernel==6.24.0
     # via jupyter-dash
 ipython==8.14.0
@@ -268,6 +272,7 @@ packaging==23.1
     #   matplotlib
     #   mlflow
     #   plotly
+    #   pytest
     #   pytorch-lightning
     #   shap
     #   statsmodels
@@ -311,6 +316,8 @@ plotly==5.15.0
     #   statsforecast
 plotly-resampler==0.8.3.2
     # via statsforecast
+pluggy==1.2.0
+    # via pytest
 pmdarima==2.0.3
     # via
     #   darts
@@ -325,6 +332,8 @@ protobuf==4.23.4
     #   tensorboardx
 psutil==5.9.5
     # via ipykernel
+psycopg2-binary==2.9.6
+    # via -r requirements.in
 ptyprocess==0.7.0
     # via pexpect
 pure-eval==0.2.2
@@ -344,6 +353,8 @@ pyod==1.1.0
     # via darts
 pyparsing==3.0.9
     # via matplotlib
+pytest==7.3.2
+    # via -r requirements.in
 python-dateutil==2.8.2
     # via
     #   holidays
@@ -352,6 +363,8 @@ python-dateutil==2.8.2
     #   matplotlib
     #   pandas
     #   prophet
+python-dotenv==1.0.0
+    # via -r requirements.in
 pytorch-lightning==2.0.5
     # via darts
 pytz==2023.3
@@ -450,6 +463,8 @@ tensorboardx==2.6.1
     # via darts
 threadpoolctl==3.2.0
     # via scikit-learn
+tomli==2.0.1
+    # via pytest
 torch==2.0.1
     # via
     #   darts
