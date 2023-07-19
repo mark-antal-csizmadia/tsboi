@@ -94,6 +94,8 @@ class CCTXFetcher(Fetcher):
                 end_dt = start_dt
                 start_dt = end_dt - chunk_size * timedelta
 
+                logger.info("[%s - %s] Fetched %s data points", start_dt, end_dt, len(df))
+
                 if break_after_n_chunks:
                     if number_of_data_points >= break_after_n_chunks * chunk_size:
                         logger.info("Reached break_after_n_chunks limit")
@@ -102,5 +104,5 @@ class CCTXFetcher(Fetcher):
                 logger.info("No more data to fetch")
                 break
 
-        logger.info("Fetched %s data points", number_of_data_points)
+        logger.info("Fetched an overall %s data points", number_of_data_points)
         return number_of_data_points
