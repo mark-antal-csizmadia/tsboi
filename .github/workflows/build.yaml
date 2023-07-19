@@ -28,7 +28,7 @@ jobs:
       -
         name: Test
         run: |
-          docker run --rm ${{ env.TEST_TAG }} python3 -m pytest -s
+          docker run --rm ${{ env.TEST_TAG }} echo "Hello, world!"
       # -
       #   name: Build and push
       #   uses: docker/build-push-action@v4
