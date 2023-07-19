@@ -1,7 +1,4 @@
-on:
-  push:
-    branches:
-      - "create_github_actions"
+on: [push]
 
 jobs:
   docker:
