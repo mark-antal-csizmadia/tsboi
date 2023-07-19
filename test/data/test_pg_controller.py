@@ -2,19 +2,6 @@ from pathlib import Path
 import shutil
 import pytest
 
-from tsboi.data.pg_controller import PostgresController
-from settings import PG_DATABASE, PG_USER, PG_PASSWORD
-
-
-@pytest.fixture
-def pg_controller():
-    return PostgresController(
-        database=PG_DATABASE,
-        user=PG_USER,
-        password=PG_PASSWORD,
-        host='localhost',
-        port='5432')
-
 
 @pytest.fixture
 def test_data():

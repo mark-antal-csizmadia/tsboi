@@ -1,18 +1,8 @@
 from typing import List
 import pandas as pd
-import pytest
-
-from tsboi.data.cctx_fetcher import CCTXFetcher
-from tsboi.data.pg_controller import PostgresController
-from settings import PG_USER, PG_DATABASE, PG_PASSWORD
 
 
-@pytest.fixture
-def fetcher():
-    return CCTXFetcher("binance")
-
-
-def test_fetch_ohlcv_data(fetcher):
+def test_fetch_ohlcv_data(fetcher, pg_controller):
 
     def save_chunk_function(
             tss: List[str],
@@ -35,13 +25,6 @@ def test_fetch_ohlcv_data(fetcher):
         )
 
         return table_name
-
-    pg_controller = PostgresController(
-        database=PG_DATABASE,
-        user=PG_USER,
-        password=PG_PASSWORD,
-        host='localhost',
-        port='5432')
 
     table_name = "test_table"
     pg_controller.create_ohlcv_table(table_name=table_name)
