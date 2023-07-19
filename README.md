@@ -1,6 +1,6 @@
 # tsboi
 
-Time-series forecasting of crypto with [Darts](https://github.com/unit8co/darts) and MLOps with [MLflow](https://github.com/mlflow/mlflow).
+Time-series forecasting of crypto. Fetching data with [cctx](https://github.com/ccxt/ccxt), training models with [Darts](https://github.com/unit8co/darts) and MLOps (model version, deploy, monitor) with [MLflow](https://github.com/mlflow/mlflow).
 
 ## Contributing
 
@@ -12,4 +12,30 @@ conda activate tsboi-env
 pip install pip-tools
 pip-compile -o requirements.txt requirements.in
 pip install -r requirements.txt
+```
+
+> For all scripts and tests, it is assumed that there exists a Posgres server running locally on port 5432 with a database named `PG_DATABASE`, a user named `PG_USER` with password `PG_PASSWORD`. These can be set as environment variables or in a `.env` file in the root directory of the project.
+> For instance:
+> ```bash
+> CREATE DATABASE btcusddb;
+> CREATE USER testuser;
+> alter user testuser with encrypted password 'qwerty';
+> grant all privileges on database btcusddb to testuser;
+> ```
+
+## Tests
+
+Run tests with:
+
+```bash
+python -m pytest -s
+```
+
+## Prepare data
+
+### Fetch data and insert into database table
+
+For instance, to fetch 1m data for BTC/USD from Binance and insert into table `ohlcv_data_1m`, ending at 2023-07-01T00:00:00Z, and starting from whatever the exchange lets us see at this time, with chunk size 720 (i.e. fetch only 720 minutes or 12 hours at a time):
+```bash
+python tsboi/fetch_ohlcv_data_and_insert_into_table.py --table_name "ohlcv_data_1m" --symbol "BTC/USD" --exchange_name "binance" --end_timestamp "2023-07-01T00:00:00Z" --periodicity "1m" --chunk_size 720
 ```
