@@ -1,0 +1,33 @@
+version: '1'
+
+services:
+  postgres:
+    container_name: postgres
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: testuser
+      POSTGRES_PASSWORD: qwerty
+      POSTGRES_DB: btcusddb
+    volumes:
+      - postgres-db:/data/btcusddb
+    ports:
+      - "5432:5432"
+
+  run_tests:
+    container_name: run_tests
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: tsboi
+    depends_on:
+      - postgres
+    command: python3 -m pytest -s --postgres_host=postgres
+    environment:
+      PG_DATABASE: btcusddb
+      PG_USER: testuser
+      PG_PASSWORD: qwerty
+
+
+volumes:
+  postgres-db:
+    driver: local
