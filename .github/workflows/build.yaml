@@ -1,18 +1,52 @@
 on: [push]
 
+env:
+  TEST_TAG: markcsizmadia/tsboi:test
+  LATEST_TAG: markcsizmadia/tsboi:latest
+
 jobs:
-  docker:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      -
+        name: Checkout
         uses: actions/checkout@v3
-      - name: Set up Docker Buildx
+      -
+        name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
-      - name: Build and NOT push
+      -
+        name: Build and export
         uses: docker/build-push-action@v4
         with:
           context: .
-          platforms: linux/amd64,linux/arm64
-          file: ./Dockerfile
-          push: false
-          tags: tsboi:latest
+          tags: ${{ env.TEST_TAG }}
+          outputs: type=docker,dest=/tmp/myimage.tar
+      -
+        name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: myimage
+          path: /tmp/myimage.tar
+
+  use:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      -
+        name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: myimage
+          path: /tmp
+      -
+        name: Load image
+        run: |
+          docker load --input /tmp/myimage.tar
+          docker image ls -a
+      -
+        name: Test
+        run: |
+          docker run --rm ${{ env.TEST_TAG }} echo "Hello world"
