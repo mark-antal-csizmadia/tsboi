@@ -39,3 +39,10 @@ For instance, to fetch 1m data for BTC/USD from Binance and insert into table `o
 ```bash
 python tsboi/fetch_ohlcv_data_and_insert_into_table.py --table_name "ohlcv_data_1m" --symbol "BTC/USD" --exchange_name "binance" --end_timestamp "2023-07-01T00:00:00Z" --periodicity "1m" --chunk_size 720
 ```
+
+### Prepare data for training
+
+For instance, to prepare per minute data for training, for BTC/USD from Binance, ending at 2023-07-01T00:00:00Z, and starting from 2020-08-12T00:00:00Z, with chunk size 60 (i.e. in each of the files, there will be 60 minutes of data, so in overall this will be 25272 files at `data/raw/`):
+```bash
+ python tsboi/prepare_ohlcv_data.py --data_dir "data/raw" --table_name "ohlcv_data" --from_timestamp "2020-08-12T00:00:00Z" --end_timestamp "2023-07-01T00:00:00Z" --periodicity "minute" --chunk_size 60
+```
