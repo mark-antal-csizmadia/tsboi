@@ -47,7 +47,7 @@ For instance, to prepare per minute data for training, for BTC/USD from Binance,
  python tsboi/prepare_ohlcv_data.py --data_dir "data/raw" --table_name "ohlcv_data" --from_timestamp "2020-08-12T00:00:00Z" --end_timestamp "2023-07-01T00:00:00Z" --periodicity "minute" --chunk_size 60
 ```
 
-## Clean data for training
+### Clean data for training
 
 > Cleaning is only interpolating missing values so far. Outlier removal and other cleaning methods will be added later.
 
