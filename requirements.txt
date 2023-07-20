@@ -60,11 +60,13 @@ charset-normalizer==3.2.0
     #   requests
 click==8.1.5
     # via
+    #   dask
     #   databricks-cli
     #   flask
     #   mlflow
 cloudpickle==2.2.1
     # via
+    #   dask
     #   mlflow
     #   shap
 cmdstanpy==1.1.0
@@ -93,6 +95,8 @@ dash-html-components==2.0.0
     # via dash
 dash-table==5.0.0
     # via dash
+dask==2023.7.0
+    # via -r requirements.in
 databricks-cli==0.17.7
     # via mlflow
 debugpy==1.6.7
@@ -126,6 +130,7 @@ fs==2.4.16
     # via triad
 fsspec[http]==2023.6.0
     # via
+    #   dask
     #   pytorch-lightning
     #   triad
 fugue==0.8.5
@@ -150,6 +155,7 @@ idna==3.4
     #   yarl
 importlib-metadata==6.8.0
     # via
+    #   dask
     #   flask
     #   jupyter-client
     #   markdown
@@ -201,6 +207,8 @@ lightning-utilities==0.9.0
     #   torchmetrics
 llvmlite==0.40.1
     # via numba
+locket==1.0.0
+    # via partd
 lunarcalendar==0.0.9
     # via prophet
 mako==1.2.4
@@ -282,6 +290,7 @@ orjson==3.9.2
     # via plotly-resampler
 packaging==23.1
     # via
+    #   dask
     #   docker
     #   ipykernel
     #   lightning-utilities
@@ -314,6 +323,8 @@ pandas==1.5.3
     #   xarray
 parso==0.8.3
     # via jedi
+partd==1.4.0
+    # via dask
 patsy==0.5.3
     # via statsmodels
 pexpect==4.8.0
@@ -398,6 +409,7 @@ pytz==2023.3
     #   pandas
 pyyaml==6.0.1
     # via
+    #   dask
     #   mlflow
     #   pytorch-lightning
 pyzmq==25.1.0
@@ -490,6 +502,10 @@ threadpoolctl==3.2.0
     # via scikit-learn
 tomli==2.0.1
     # via pytest
+toolz==0.12.0
+    # via
+    #   dask
+    #   partd
 torch==2.0.1
     # via
     #   darts
