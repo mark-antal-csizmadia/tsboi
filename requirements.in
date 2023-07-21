@@ -4,5 +4,6 @@ psycopg2-binary==2.9.6
 pytest==7.3.2
 python-dotenv==1.0.0
 ccxt==4.0.30
-pydantic==2.0.3
+pydantic==1.10
 dask==2023.7.0
+optuna==3.2.0
