@@ -36,7 +36,7 @@ class MLflowXGBOHLCVModel(mlflow.pyfunc.PythonModel):
         # infer frequency from model_input
         freq = pd.infer_freq(model_input.index)
         assert freq is not None, "Could not infer frequency from model_input"
-        print(f"freq: {freq}")
+        # print(f"freq: {freq}")
 
         series = TimeSeries.from_dataframe(model_input, value_cols="close", freq=freq)
         covariate_open = TimeSeries.from_dataframe(model_input, value_cols="open", freq=freq)
