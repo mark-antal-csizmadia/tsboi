@@ -57,17 +57,13 @@ class BaseCleaner:
             file_names: List[str],
             backend: Literal['dask', 'sequential'] = 'dask') \
             -> None:
+        start = time.time()
         if backend == 'sequential':
-            start = time.time()
             for file_name in file_names:
                 self.clean_step(file_name=file_name)
-            end = time.time()
-
         elif backend == 'dask':
-            start = time.time()
             db.from_sequence(file_names).map(self.clean_step).compute()
-            end = time.time()
         else:
             raise ValueError(f'backend {backend} not supported')
 
-        logger.info(f'time taken: {end - start:.4f} seconds for {len(file_names)} files (backend: {backend})')
+        logger.info(f'time taken: {time.time() - start:.4f} seconds for {len(file_names)} files (backend: {backend})')
