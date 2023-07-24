@@ -3,8 +3,6 @@ import argparse
 import logging
 import shutil
 from pathlib import Path
-import pandas as pd
-from pydantic import BaseModel, AfterValidator
 
 # TODO: remove this when the code is packaged
 sys.path.insert(0, '../tsboi')
