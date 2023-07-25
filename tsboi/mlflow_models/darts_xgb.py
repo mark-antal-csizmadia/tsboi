@@ -79,8 +79,6 @@ class MLflowDartsXGBModel(mlflow.pyfunc.PythonModel):
             self, outputs) \
             -> pd.DataFrame:
 
-        print(f"outputs: {outputs}")
-        print(f"outputs.is_stochastic: {outputs.is_stochastic}")
         prediction_mean = outputs.mean().values()[0][0]
         prediction_std = outputs.std().values()[0][0] if outputs.is_stochastic else 0
         prediction_timestamp = outputs.time_index[0]
@@ -100,7 +98,6 @@ class MLflowDartsXGBModel(mlflow.pyfunc.PythonModel):
 
         series, covariates = self.format_inputs(model_input=model_input)
 
-        print(f"num_samples: {self.num_samples}")
         prediction: TimeSeries = self.model.predict(
             n=1,
             series=series,

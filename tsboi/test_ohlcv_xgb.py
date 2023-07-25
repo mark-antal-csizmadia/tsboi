@@ -1,4 +1,5 @@
 import sys
+import logging
 import mlflow
 from pathlib import Path
 from glob import glob
@@ -7,57 +8,46 @@ import matplotlib.pyplot as plt
 
 DATA_DIR = Path('data/cleaned')
 
-FREQ = '1T'
 # TODO: remove this when the code is packaged
 sys.path.insert(0, '../tsboi')
 # END TODO
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 def get_df():
     paths = sorted(glob(str(DATA_DIR / '*.csv')))
     # TODO: remove
-    # paths = paths[:-6320]
-    paths = paths[1000:2000]
-    print(f"Loading {len(paths)} files from {DATA_DIR}")
+    logger.info("Loading %s files from %s", len(paths), DATA_DIR)
     dfs = [pd.read_csv(path) for path in paths]
-    print(f"Loaded {len(dfs)} files")
     df = pd.concat(dfs, axis=0)
-
-    print(df.head())
+    logger.info("Loaded %s rows", df.shape[0])
 
     return df
 
 
 if __name__ == "__main__":
-    logged_model = 'runs:/dcbcf59f89a342bcb3194304c767859c/ohlcv-xgb-20230725154009'
-
+    logged_model = 'runs:/1876a8c5cf094e439b04d3a32f9040a3/ohlcv-xgb-20230725162017'
+    n_timesteps = 200
 
     # Load model as a PyFuncModel.
     loaded_model = mlflow.pyfunc.load_model(logged_model)
 
-    data = get_df()
-    data = data.iloc[0:60]
-    print(data.describe())
-    print(data.head())
-    print(data.info())
-    # min and max index
-    print(data.index.min())
-    print(data.index.max())
+    df = get_df()
+    df = df.iloc[70000:80000]
 
-    print(loaded_model.predict(data))
-
-    df_orig = get_df()
     predictions = []
     dfs = []
-    n_range = 200
+
     lag = 60
     tss = []
-    for i in range(n_range):
+    for i in range(n_timesteps):
         from_idx = i
         to_idx = from_idx + lag
 
-        prediciton = loaded_model.predict(df_orig.iloc[from_idx:to_idx])
-        dfs.append(df_orig.iloc[from_idx:to_idx])
+        prediciton = loaded_model.predict(df.iloc[from_idx:to_idx])
+        dfs.append(df.iloc[from_idx:to_idx])
         predictions.append(prediciton)
 
     df_pred = pd.concat(predictions, axis=0)
@@ -65,14 +55,14 @@ if __name__ == "__main__":
         columns={"prediction_mean": 'close_pred', 'prediction_std': 'close_pred_std', 'prediction_timestamp': 'ts'},
         inplace=True)
     df_pred.set_index('ts', inplace=True)
-    print(df_pred.head())
+
     df_pred['close_pred_top'] = df_pred['close_pred'] + df_pred['close_pred_std']
     df_pred['close_pred_bottom'] = df_pred['close_pred'] - df_pred['close_pred_std']
 
     # outer join on ts as index
-    df_orig["ts"] = df_orig["ts"].astype('datetime64[ns]')
-    df_orig.set_index('ts', inplace=True)
-    df = df_pred.join(df_orig, how='inner')
+    df["ts"] = df["ts"].astype('datetime64[ns]')
+    df.set_index('ts', inplace=True)
+    df = df_pred.join(df, how='inner')
     print(df.head())
 
     df.drop(columns=["open", "high", "low", "volume", "close_pred_std"], inplace=True)
