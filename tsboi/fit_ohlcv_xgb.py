@@ -118,13 +118,19 @@ def main() \
 
         mlflow.log_params(run_params)
 
-        model, prediction = xgb_train_function(
+        model = xgb_train_function(
             series_dict=series_dict,
             covariates_dict=covariates_dict,
             lags_dict=lags_dict,
             probabilistic_dict=probabilistic_dict,
             random_state=random_state,
             **run_params
+        )
+
+        prediction = model.predict(
+            n=len(series_dict["series_test"]),
+            past_covariates=covariates_dict["covariates"],
+            num_samples=probabilistic_dict.get("num_samples", 1),
         )
 
         print(f"Test RMSE: {rmse(series_test, prediction)}")

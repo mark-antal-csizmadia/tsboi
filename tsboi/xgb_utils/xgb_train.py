@@ -1,8 +1,6 @@
-from typing import Dict, Any, Optional, List, Union, Tuple
+from typing import Dict, Any, Optional, List, Union
 from darts import TimeSeries
 from darts.models import XGBModel
-from darts.metrics import rmse
-import mlflow
 
 
 def xgb_train_function(
@@ -12,8 +10,7 @@ def xgb_train_function(
         probabilistic_dict: Dict[str, Any],
         random_state: Optional[int] = None,
         **kwargs: Dict[str, Any]) \
-        -> Tuple[XGBModel, TimeSeries]:
-
+        -> XGBModel:
 
     series_train: TimeSeries = series_dict['series_train']
     series_val: TimeSeries = series_dict['series_val']
@@ -28,7 +25,6 @@ def xgb_train_function(
     lags_past_covariates: Union[int, List[int], None] = lags_dict.get('lags_past_covariates', None)
     likelihood: Union[str, None] = probabilistic_dict.get('likelihood', None)
     quantiles: Union[List[float], None] = probabilistic_dict.get('quantiles', None)
-    num_samples: int = probabilistic_dict.get('num_samples', 1)
 
     model = XGBModel(
         lags=lags,
@@ -56,10 +52,4 @@ def xgb_train_function(
         verbose=True
     )
 
-    prediction = model.predict(
-        n=len(series_test),
-        past_covariates=covariates,
-        num_samples=num_samples
-    )
-
-    return model, prediction
+    return model

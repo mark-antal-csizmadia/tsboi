@@ -47,7 +47,7 @@ def build_train_objective(
 
             mlflow.log_params(params=params)
 
-            model, prediction = \
+            model = \
                 xgb_train_function(
                     series_dict=series_dict,
                     covariates_dict=covariates_dict,
@@ -56,6 +56,11 @@ def build_train_objective(
                     random_state=random_state,
                     **params
                 )
+            prediction = model.predict(
+                n=len(series_dict["series_test"]),
+                past_covariates=covariates_dict["covariates"],
+                num_samples=probabilistic_dict.get("num_samples", 1),
+            )
             rmse_score = rmse(series_dict["series_test"], prediction)
             metrics = {"rmse_val": rmse_score}
             mlflow.log_metrics(metrics)
@@ -170,7 +175,7 @@ def main() \
         'n_estimators': hyperopt.hp.randint('n_estimators', 100, 1000),
     }
 
-    trials = hyperopt.SparkTrials(parallelism=1)
+    # trials = hyperopt.SparkTrials(parallelism=1)
     train_objective = \
         build_train_objective(
             series_dict=series_dict,
@@ -227,13 +232,18 @@ def main() \
 
         mlflow.log_params(best_child_run_params)
 
-        model, prediction = xgb_train_function(
+        model = xgb_train_function(
             series_dict=series_refit_dict,
             covariates_dict=covariates_refit_dict,
             lags_dict=lags_dict,
             probabilistic_dict=probabilistic_dict,
             random_state=random_state,
             **best_child_run_params
+        )
+        prediction = model.predict(
+            n=len(series_refit_dict["series_test"]),
+            past_covariates=covariates_refit_dict["covariates"],
+            num_samples=probabilistic_dict.get("num_samples", 1),
         )
 
         print(f"Test RMSE: {rmse(series_test, prediction)}")

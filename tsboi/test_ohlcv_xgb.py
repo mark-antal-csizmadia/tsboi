@@ -37,7 +37,8 @@ def get_df():
 
 
 if __name__ == "__main__":
-    logged_model = 'runs:/18bc1107358f412aa057e855772c136f/ohlcv-xgb-20230721173019'
+    logged_model = 'runs:/1ddb17a031fc4ad9b6eac50fd9ed294a/ohlcv-xgb-20230725083736'
+
 
     # Load model as a PyFuncModel.
     loaded_model = mlflow.pyfunc.load_model(logged_model)
