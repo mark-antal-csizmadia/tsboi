@@ -41,8 +41,8 @@ def main() \
         covariate_ids=covariate_ids,
         dtype='float32')
 
-    # series, covariates = dataset.load_dataset(limit=1510000, record_examples_df_n_timesteps=1000)
     series, covariates = dataset.load_dataset(limit=60000, record_examples_df_n_timesteps=1000)
+    # series, covariates = dataset.load_dataset(limit=1510000, record_examples_df_n_timesteps=1000)
 
     logger.info(f"Dataset description:")
     logger.info(f"{dataset.description}")
@@ -56,7 +56,7 @@ def main() \
         {
             'learning_rate': 0.1,
             'max_depth': 6,
-            'n_estimators': 1000,
+            'n_estimators': 150,
             'reg_alpha': 0.1,
         }
 

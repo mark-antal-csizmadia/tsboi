@@ -28,7 +28,7 @@ def get_df():
 
 
 if __name__ == "__main__":
-    logged_model = 'runs:/15be9ddd93db4134a330b2218e0975e4/ohlcv-xgb-20230725163548'
+    logged_model = 'runs:/6c3ad1c315e545aa9559de4c4566c199/ohlcv-xgb-20230725164416'
     n_timesteps = 200
 
     # Load model as a PyFuncModel.
@@ -36,6 +36,7 @@ if __name__ == "__main__":
 
     df = get_df()
     df = df.iloc[70000:80000]
+    # df = df.iloc[-6320:]
 
     predictions = []
     dfs = []
