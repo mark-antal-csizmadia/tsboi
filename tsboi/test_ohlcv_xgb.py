@@ -38,7 +38,7 @@ def get_df():
 
 
 if __name__ == "__main__":
-    logged_model = 'runs:/a18f919a01554c4d96930ea332b26bdd/ohlcv-xgb-20230725112108'
+    logged_model = 'runs:/eeac0bfa4d864968aeeb730cbf64d14c/ohlcv-xgb-20230725115416'
 
 
     # Load model as a PyFuncModel.

@@ -131,6 +131,23 @@ def main() \
         'n_estimators': hyperopt.hp.randint('n_estimators', 100, 1000),
     }
 
+    space_dtypes = {
+        'learning_rate': float,
+        'max_depth': int,
+        'reg_alpha': float,
+        'n_estimators': int,
+    }
+
+    hyperparameter_no_dtypes = set(space.keys()).difference(set(space_dtypes.keys()))
+    if hyperparameter_no_dtypes:
+        raise ValueError("The following hyperparameters do not have dtypes specified: {}".
+                         format(hyperparameter_no_dtypes))
+
+    hyperparameter_lags = set(lags_dict.keys()).intersection(set(space.keys()))
+    if hyperparameter_lags:
+        logger.warning("The following hyperparameters are also present in lags_dict: {}. Space will take precedence.".
+                       format(hyperparameter_lags))
+
     # trials = hyperopt.SparkTrials(parallelism=1)
     train_objective = \
         build_train_objective(
@@ -175,16 +192,7 @@ def main() \
                 'covariates_val': covariates_train_val
             }
 
-        # TODO: better handle this
-        # all values to float or int, if possible
-        for key, value in best_child_run_params.items():
-            try:
-                best_child_run_params[key] = int(value)
-            except ValueError:
-                try:
-                    best_child_run_params[key] = float(value)
-                except ValueError:
-                    pass
+        best_child_run_params = {key: space_dtypes[key](value) for key, value in best_child_run_params.items()}
 
         mlflow.log_params(best_child_run_params)
 
