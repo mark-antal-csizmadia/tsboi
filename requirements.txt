@@ -58,11 +58,14 @@ charset-normalizer==3.2.0
     #   requests
 click==8.1.5
     # via
+    #   dask
     #   databricks-cli
     #   flask
     #   mlflow
 cloudpickle==2.2.1
     # via
+    #   dask
+    #   hyperopt
     #   mlflow
     #   shap
 cmdstanpy==1.1.0
@@ -91,6 +94,8 @@ dash-html-components==2.0.0
     # via dash
 dash-table==5.0.0
     # via dash
+dask==2023.7.0
+    # via -r requirements.in
 databricks-cli==0.17.7
     # via mlflow
 debugpy==1.6.7
@@ -124,12 +129,15 @@ fs==2.4.16
     # via triad
 fsspec[http]==2023.6.0
     # via
+    #   dask
     #   pytorch-lightning
     #   triad
 fugue==0.8.5
     # via statsforecast
 fugue-sql-antlr==0.1.6
     # via fugue
+future==0.18.3
+    # via hyperopt
 gitdb==4.0.10
     # via gitpython
 gitpython==3.1.32
@@ -142,12 +150,15 @@ holidays==0.29
     # via
     #   darts
     #   prophet
+hyperopt==0.2.7
+    # via -r requirements.in
 idna==3.4
     # via
     #   requests
     #   yarl
 importlib-metadata==6.8.0
     # via
+    #   dask
     #   flask
     #   jupyter-client
     #   markdown
@@ -199,6 +210,8 @@ lightning-utilities==0.9.0
     #   torchmetrics
 llvmlite==0.40.1
     # via numba
+locket==1.0.0
+    # via partd
 lunarcalendar==0.0.9
     # via prophet
 mako==1.2.4
@@ -236,7 +249,9 @@ nest-asyncio==1.5.6
     #   ipykernel
     #   jupyter-dash
 networkx==3.1
-    # via torch
+    # via
+    #   hyperopt
+    #   torch
 nfoursid==1.0.1
     # via darts
 numba==0.57.1
@@ -250,6 +265,7 @@ numpy==1.24.4
     #   cmdstanpy
     #   contourpy
     #   darts
+    #   hyperopt
     #   lightgbm
     #   matplotlib
     #   mlflow
@@ -280,6 +296,7 @@ orjson==3.9.2
     # via plotly-resampler
 packaging==23.1
     # via
+    #   dask
     #   docker
     #   ipykernel
     #   lightning-utilities
@@ -312,6 +329,8 @@ pandas==1.5.3
     #   xarray
 parso==0.8.3
     # via jedi
+partd==1.4.0
+    # via dask
 patsy==0.5.3
     # via statsmodels
 pexpect==4.8.0
@@ -352,6 +371,10 @@ ptyprocess==0.7.0
     # via pexpect
 pure-eval==0.2.2
     # via stack-data
+py4j==0.10.9.7
+    # via
+    #   hyperopt
+    #   pyspark
 pyarrow==12.0.1
     # via
     #   fugue
@@ -361,6 +384,8 @@ pycares==4.3.0
     # via aiodns
 pycparser==2.21
     # via cffi
+pydantic==1.10.0
+    # via -r requirements.in
 pygments==2.15.1
     # via ipython
 pyjwt==2.7.0
@@ -371,6 +396,8 @@ pyod==1.1.0
     # via darts
 pyparsing==3.0.9
     # via matplotlib
+pyspark==3.4.1
+    # via -r requirements.in
 pytest==7.3.2
     # via -r requirements.in
 python-dateutil==2.8.2
@@ -392,6 +419,7 @@ pytz==2023.3
     #   pandas
 pyyaml==6.0.1
     # via
+    #   dask
     #   mlflow
     #   pytorch-lightning
 pyzmq==25.1.0
@@ -425,6 +453,7 @@ scipy==1.11.1
     # via
     #   catboost
     #   darts
+    #   hyperopt
     #   lightgbm
     #   mlflow
     #   pmdarima
@@ -443,6 +472,7 @@ six==1.16.0
     #   catboost
     #   databricks-cli
     #   fs
+    #   hyperopt
     #   patsy
     #   pyod
     #   python-dateutil
@@ -484,6 +514,10 @@ threadpoolctl==3.2.0
     # via scikit-learn
 tomli==2.0.1
     # via pytest
+toolz==0.12.0
+    # via
+    #   dask
+    #   partd
 torch==2.0.1
     # via
     #   darts
@@ -499,6 +533,7 @@ tqdm==4.65.0
     # via
     #   cmdstanpy
     #   darts
+    #   hyperopt
     #   prophet
     #   pytorch-lightning
     #   shap
@@ -524,6 +559,7 @@ typing-extensions==4.7.1
     #   alembic
     #   ipython
     #   lightning-utilities
+    #   pydantic
     #   pytorch-lightning
     #   sqlalchemy
     #   torch
