@@ -1,6 +1,42 @@
+from dataclasses import dataclass
 import mlflow
+from mlflow.models import ModelSignature, infer_signature
+from mlflow.types.schema import Schema, ColSpec
 from pathlib import Path
 import pandas as pd
+
+
+@dataclass
+class MLflowXGBOHLCVModelSignature:
+    input_schema = Schema(
+        [
+            ColSpec("datetime", "ts"),
+            ColSpec("double", "open"),
+            ColSpec("double", "high"),
+            ColSpec("double", "low"),
+            ColSpec("double", "close"),
+            ColSpec("double", "volume"),
+        ]
+    )
+    output_schema = Schema(
+        [
+            ColSpec("datetime", "prediction_timestamp"),
+            ColSpec("double", "prediction_mean"),
+            ColSpec("double", "prediction_std"),
+        ]
+    )
+    signature = ModelSignature(inputs=input_schema, outputs=output_schema)
+
+    input_example = pd.DataFrame(
+        columns=["ts", "open", "high", "low", "close", "volume"],
+        data=[
+            ["2023-07-01T00:00:00Z", 123.2, 222.0, 113.0, 204.0, 51.7],
+            ["2023-07-01T00:01:00Z", 204.0, 212.8, 204.0, 212.8, 29.1],
+            ["2023-07-01T00:02:00Z", 212.8, 215.8, 212.8, 214.2, 3.7],
+        ],
+    )
+
+
 
 
 class MLflowXGBOHLCVModel(mlflow.pyfunc.PythonModel):
@@ -33,6 +69,7 @@ class MLflowXGBOHLCVModel(mlflow.pyfunc.PythonModel):
         from darts import TimeSeries
         from darts import concatenate
 
+        model_input.set_index("ts", inplace=True)
         # infer frequency from model_input
         freq = pd.infer_freq(model_input.index)
         assert freq is not None, "Could not infer frequency from model_input"

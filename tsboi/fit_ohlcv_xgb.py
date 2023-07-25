@@ -15,7 +15,7 @@ import mlflow
 sys.path.insert(0, '../tsboi')
 # END TODO
 from tsboi.xgb_utils.xgb_train import xgb_train_function
-from tsboi.mlflow_models.ohlcv_models import MLflowXGBOHLCVModel
+from tsboi.mlflow_models.ohlcv_models import MLflowXGBOHLCVModel, MLflowXGBOHLCVModelSignature
 
 MODEL_NAME = 'ohlcv-xgb-{}'.format(datetime.now().strftime('%Y%m%d%H%M%S'))
 MODEL_DIR = Path('models') / MODEL_NAME
@@ -153,6 +153,8 @@ def main() \
             artifact_path=MODEL_NAME,
             python_model=MLflowXGBOHLCVModel(),
             artifacts=artifacts,
+            signature=MLflowXGBOHLCVModelSignature.signature,
+            input_example=MLflowXGBOHLCVModelSignature.input_example
         )
 
         # clean up

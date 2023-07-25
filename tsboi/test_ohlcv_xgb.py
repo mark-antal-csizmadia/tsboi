@@ -18,10 +18,11 @@ def get_df():
     # TODO: remove
     paths = paths[1000:2000]
     print(f"Loading {len(paths)} files from {DATA_DIR}")
-    dfs = [pd.read_csv(path, parse_dates=['ts']) for path in paths]
+    # dfs = [pd.read_csv(path, parse_dates=['ts']) for path in paths]
+    dfs = [pd.read_csv(path) for path in paths]
     print(f"Loaded {len(dfs)} files")
     df = pd.concat(dfs, axis=0)
-    # remove timezone info
+    """# remove timezone info
     df['ts'] = df['ts'].dt.tz_localize(None)
     df.set_index('ts', inplace=True)
     # open, high, low, close, volume to float32
@@ -29,7 +30,7 @@ def get_df():
     df['high'] = df['high'].astype('float32')
     df['low'] = df['low'].astype('float32')
     df['close'] = df['close'].astype('float32')
-    df['volume'] = df['volume'].astype('float32')
+    df['volume'] = df['volume'].astype('float32')"""
 
     print(df.head())
 
@@ -37,7 +38,7 @@ def get_df():
 
 
 if __name__ == "__main__":
-    logged_model = 'runs:/1ddb17a031fc4ad9b6eac50fd9ed294a/ohlcv-xgb-20230725083736'
+    logged_model = 'runs:/33590ca369be494cbb6841ef6d5df127/ohlcv-xgb-20230725090625'
 
 
     # Load model as a PyFuncModel.
@@ -76,6 +77,8 @@ if __name__ == "__main__":
     print(df_pred.head())
 
     # outer join on ts as index
+    df_orig["ts"] = df_orig["ts"].astype('datetime64[ns]')
+    df_orig.set_index('ts', inplace=True)
     df = df_pred.join(df_orig, how='inner')
     print(df.head())
 
