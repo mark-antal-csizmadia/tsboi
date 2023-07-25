@@ -28,7 +28,7 @@ def get_df():
 
 
 if __name__ == "__main__":
-    logged_model = 'runs:/1876a8c5cf094e439b04d3a32f9040a3/ohlcv-xgb-20230725162017'
+    logged_model = 'runs:/15be9ddd93db4134a330b2218e0975e4/ohlcv-xgb-20230725163548'
     n_timesteps = 200
 
     # Load model as a PyFuncModel.

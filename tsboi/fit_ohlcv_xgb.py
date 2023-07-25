@@ -13,7 +13,7 @@ from darts.metrics import rmse
 # TODO: remove this when the code is packaged
 sys.path.insert(0, '../tsboi')
 # END TODO
-from tsboi.xgb_utils.xgb_train import xgb_train_function
+from tsboi.trainers.xgb_train import xgb_train_function
 from tsboi.mlflow_models.darts_xgb import MLflowDartsXGBModel
 from tsboi.data.base_dataset import BaseDataset
 
