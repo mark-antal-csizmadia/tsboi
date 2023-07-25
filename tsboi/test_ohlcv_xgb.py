@@ -16,21 +16,11 @@ sys.path.insert(0, '../tsboi')
 def get_df():
     paths = sorted(glob(str(DATA_DIR / '*.csv')))
     # TODO: remove
-    paths = paths[1000:2000]
+    paths = paths[:-6320]
     print(f"Loading {len(paths)} files from {DATA_DIR}")
-    # dfs = [pd.read_csv(path, parse_dates=['ts']) for path in paths]
     dfs = [pd.read_csv(path) for path in paths]
     print(f"Loaded {len(dfs)} files")
     df = pd.concat(dfs, axis=0)
-    """# remove timezone info
-    df['ts'] = df['ts'].dt.tz_localize(None)
-    df.set_index('ts', inplace=True)
-    # open, high, low, close, volume to float32
-    df['open'] = df['open'].astype('float32')
-    df['high'] = df['high'].astype('float32')
-    df['low'] = df['low'].astype('float32')
-    df['close'] = df['close'].astype('float32')
-    df['volume'] = df['volume'].astype('float32')"""
 
     print(df.head())
 
@@ -38,7 +28,7 @@ def get_df():
 
 
 if __name__ == "__main__":
-    logged_model = 'runs:/eeac0bfa4d864968aeeb730cbf64d14c/ohlcv-xgb-20230725115416'
+    logged_model = 'runs:/dcbcf59f89a342bcb3194304c767859c/ohlcv-xgb-20230725154009'
 
 
     # Load model as a PyFuncModel.
@@ -75,6 +65,8 @@ if __name__ == "__main__":
         inplace=True)
     df_pred.set_index('ts', inplace=True)
     print(df_pred.head())
+    df_pred['close_pred_top'] = df_pred['close_pred'] + df_pred['close_pred_std']
+    df_pred['close_pred_bottom'] = df_pred['close_pred'] - df_pred['close_pred_std']
 
     # outer join on ts as index
     df_orig["ts"] = df_orig["ts"].astype('datetime64[ns]')

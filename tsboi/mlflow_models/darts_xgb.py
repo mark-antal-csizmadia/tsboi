@@ -1,45 +1,10 @@
-from dataclasses import dataclass
 import mlflow
-from mlflow.models import ModelSignature, infer_signature
-from mlflow.types.schema import Schema, ColSpec
 from pathlib import Path
 import pandas as pd
+from typing import Union
 
 
-@dataclass
-class MLflowXGBOHLCVModelSignature:
-    input_schema = Schema(
-        [
-            ColSpec("datetime", "ts"),
-            ColSpec("double", "open"),
-            ColSpec("double", "high"),
-            ColSpec("double", "low"),
-            ColSpec("double", "close"),
-            ColSpec("double", "volume"),
-        ]
-    )
-    output_schema = Schema(
-        [
-            ColSpec("datetime", "prediction_timestamp"),
-            ColSpec("double", "prediction_mean"),
-            ColSpec("double", "prediction_std"),
-        ]
-    )
-    signature = ModelSignature(inputs=input_schema, outputs=output_schema)
-
-    input_example = pd.DataFrame(
-        columns=["ts", "open", "high", "low", "close", "volume"],
-        data=[
-            ["2023-07-01T00:00:00Z", 123.2, 222.0, 113.0, 204.0, 51.7],
-            ["2023-07-01T00:01:00Z", 204.0, 212.8, 204.0, 212.8, 29.1],
-            ["2023-07-01T00:02:00Z", 212.8, 215.8, 212.8, 214.2, 3.7],
-        ],
-    )
-
-
-
-
-class MLflowXGBOHLCVModel(mlflow.pyfunc.PythonModel):
+class MLflowDartsXGBModel(mlflow.pyfunc.PythonModel):
     def load_context(
             self,
             context: mlflow.pyfunc.PythonModelContext) \
@@ -47,9 +12,13 @@ class MLflowXGBOHLCVModel(mlflow.pyfunc.PythonModel):
 
         from darts.models import XGBModel
         import joblib
+        import yaml
 
         self.path_to_model: Path = \
             context.artifacts["path_to_model_file"]
+        self.path_to_model_info_file: Path = \
+            context.artifacts["path_to_model_info_file"]
+
         self.path_to_pipeline_target: Path = \
             context.artifacts.get("path_to_pipeline_target_file", None)
         self.path_to_pipeline_past_covariates: Path = \
@@ -61,6 +30,16 @@ class MLflowXGBOHLCVModel(mlflow.pyfunc.PythonModel):
             joblib.load(self.path_to_pipeline_past_covariates) if self.path_to_pipeline_past_covariates else None
 
         self.model: XGBModel = XGBModel.load(str(self.path_to_model))
+
+        with open(self.path_to_model_info_file, "r") as stream:
+            try:
+                model_info = yaml.safe_load(stream)
+            except yaml.YAMLError as exc:
+                raise exc
+
+        self.target_id: str = model_info["target_id"]
+        self.covariate_ids: Union[str, None] = model_info.get("covariate_ids", None)
+        self.num_samples: int = model_info.get("num_samples", 1)
 
     def format_inputs(
             self,
@@ -75,18 +54,23 @@ class MLflowXGBOHLCVModel(mlflow.pyfunc.PythonModel):
         assert freq is not None, "Could not infer frequency from model_input"
         # print(f"freq: {freq}")
 
-        series = TimeSeries.from_dataframe(model_input, value_cols="close", freq=freq)
-        covariate_open = TimeSeries.from_dataframe(model_input, value_cols="open", freq=freq)
-        covariate_high = TimeSeries.from_dataframe(model_input, value_cols="high", freq=freq)
-        covariate_low = TimeSeries.from_dataframe(model_input, value_cols="low", freq=freq)
-        # covariate_volume = TimeSeries.from_dataframe(model_input, value_cols="volume", freq=FREQ)
+        series = TimeSeries.from_dataframe(model_input, value_cols=self.target_id, freq=freq)
 
-        covariates = concatenate([covariate_open, covariate_high, covariate_low], axis="component")
+        if self.covariate_ids:
+            covariates_list = []
+            for covariate_id in self.covariate_ids:
+                covariate = TimeSeries.from_dataframe(model_input, value_cols=covariate_id, freq=freq)
+                covariates_list.append(covariate)
 
-        if self.pipeline_target is not None:
+            covariates = concatenate(covariates_list, axis="component")
+
+        else:
+            covariates = None
+
+        if self.pipeline_target:
             series = self.pipeline_target.transform(series)
 
-        if self.pipeline_past_covariates is not None:
+        if self.pipeline_past_covariates:
             covariates = self.pipeline_past_covariates.transform(covariates)
 
         return series, covariates
@@ -95,6 +79,8 @@ class MLflowXGBOHLCVModel(mlflow.pyfunc.PythonModel):
             self, outputs) \
             -> pd.DataFrame:
 
+        print(f"outputs: {outputs}")
+        print(f"outputs.is_stochastic: {outputs.is_stochastic}")
         prediction_mean = outputs.mean().values()[0][0]
         prediction_std = outputs.std().values()[0][0] if outputs.is_stochastic else 0
         prediction_timestamp = outputs.time_index[0]
@@ -105,20 +91,25 @@ class MLflowXGBOHLCVModel(mlflow.pyfunc.PythonModel):
             "prediction_timestamp": [prediction_timestamp]
         })
 
-    def predict(self, context, model_input):
+    def predict(
+            self,
+            context,
+            model_input):
+
         from darts import TimeSeries
 
         series, covariates = self.format_inputs(model_input=model_input)
 
+        print(f"num_samples: {self.num_samples}")
         prediction: TimeSeries = self.model.predict(
             n=1,
             series=series,
             past_covariates=covariates,
-            num_samples=1,
+            num_samples=self.num_samples,
         )
 
         # inverse transform
-        if self.pipeline_target is not None:
+        if self.pipeline_target:
             prediction = self.pipeline_target.inverse_transform(prediction, partial=True)
 
         return self.format_outputs(outputs=prediction)

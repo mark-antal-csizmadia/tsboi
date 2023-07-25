@@ -41,7 +41,7 @@ def main() \
         covariate_ids=covariate_ids,
         dtype='float32')
 
-    series, covariates = dataset.load_dataset(limit=1510000, record_examples_df_n_timesteps=1000)
+    series, covariates = dataset.load_dataset(limit=60000, record_examples_df_n_timesteps=1000)
 
     logger.info(f"Dataset description:")
     logger.info(f"{dataset.description}")
@@ -72,7 +72,7 @@ def main() \
             'covariates_val': covariates_train_val
         }
     lags_dict = {"lags_past_covariates": 60}
-    probabilistic_dict = {}
+    probabilistic_dict = {"num_samples": 100, "likelihood": "poisson"}
 
     with mlflow.start_run(run_name=f"{MODEL_NAME}-fit") as run:
 

@@ -28,6 +28,7 @@ class BaseDataset:
         self.dtype = dtype
         self.freq = None
         self.description = None
+        self.examples_df = None
 
     def load_data_from_disk(
             self,
@@ -35,13 +36,20 @@ class BaseDataset:
             -> pd.DataFrame:
 
         paths = sorted(glob(str(self.data_dir / self.file_pattern)))
-        paths = paths[0:limit] if limit else paths
         logger.info(f"Loading %s files from %s", len(paths), self.data_dir)
 
         dfs = [pd.read_csv(path, parse_dates=[BaseDataset.TIMESTAMP_COLUMN_NAME]) for path in paths]
-        logger.info(f"Loaded %s files", len(dfs))
+        df = pd.concat(dfs, axis=0)
+        logger.info(f"Loaded %s rows", df.shape[0])
 
-        return pd.concat(dfs, axis=0)
+        # drop everything that is not timestamp, target or covariate
+        df = df[[BaseDataset.TIMESTAMP_COLUMN_NAME, self.target_id] + self.covariate_ids]
+
+        # limit number of rows
+        df = df.iloc[:limit] if limit else df
+        logger.info(f"Using %s rows", df.shape[0])
+
+        return df
 
     def get_series_and_covariates(
             self,
@@ -108,11 +116,13 @@ class BaseDataset:
 
     def load_dataset(
             self,
-            limit: Optional[int] = None) \
+            limit: Optional[int] = None,
+            record_examples_df_n_timesteps: Optional[int] = None) \
             -> Tuple[TimeSeries, TimeSeries]:
 
         df = self.load_data_from_disk(limit=limit)
         series, covariates = self.get_series_and_covariates(df=df)
         self.description = self.describe_series_and_covariates(series=series, covariates=covariates)
+        self.examples_df = df.reset_index().head(record_examples_df_n_timesteps) if record_examples_df_n_timesteps else None
 
         return series, covariates

@@ -1,16 +1,17 @@
 import sys
-from typing import Any, Callable, Dict, Optional, Tuple
-from darts import TimeSeries, concatenate
-from darts.metrics import rmse
-import pandas as pd
 import logging
-from glob import glob
-import pyspark
-from pathlib import Path
 import shutil
-import matplotlib.pyplot as plt
 from datetime import datetime
+from typing import Any, Callable, Dict, Optional, Tuple
+from pathlib import Path
+import yaml
+import matplotlib.pyplot as plt
+from darts import TimeSeries
+from darts.metrics import rmse
+import pyspark
 import mlflow
+from mlflow.models import ModelSignature
+from mlflow.types.schema import Schema, ColSpec
 import hyperopt
 # from hyperopt.pyll.base import scope
 
@@ -18,14 +19,15 @@ import hyperopt
 sys.path.insert(0, '../tsboi')
 # END TODO
 from tsboi.xgb_utils.xgb_train import xgb_train_function
-from tsboi.mlflow_models.ohlcv_models import MLflowXGBOHLCVModel, MLflowXGBOHLCVModelSignature
+from tsboi.mlflow_models.darts_xgb import MLflowDartsXGBModel
 from tsboi.data.base_dataset import BaseDataset
 
 MODEL_NAME = 'ohlcv-xgb-{}'.format(datetime.now().strftime('%Y%m%d%H%M%S'))
 MODEL_DIR = Path('models') / MODEL_NAME
+MODEL_PATH = MODEL_DIR / 'model.pkl'
+MODEL_INFO_PATH = MODEL_DIR / 'model_info.yaml'
 MODEL_DIR.mkdir(parents=True, exist_ok=True)
 DATA_DIR = Path('data/cleaned')
-# FREQ = '1T'
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -95,14 +97,17 @@ def main() \
         -> None:
     random_state = 42
 
+    target_id = 'close'
+    covariate_ids = ['open', 'high', 'low']
+
     dataset = BaseDataset(
         data_dir=DATA_DIR,
         file_pattern='*.csv',
-        target_id='close',
-        covariate_ids=['open', 'high', 'low'],
-        dtype='float32',
-    )
-    series, covariates = dataset.load_dataset(limit=1000)
+        target_id=target_id,
+        covariate_ids=covariate_ids,
+        dtype='float32')
+
+    series, covariates = dataset.load_dataset(limit=60000, record_examples_df_n_timesteps=1000)
 
     series_train_val, series_test = series.split_after(split_point=0.8)
     covariates_train_val, covariates_test = covariates.split_after(split_point=0.8)
@@ -212,26 +217,52 @@ def main() \
 
         print(f"Test RMSE: {rmse(series_test, prediction)}")
 
-        # plot
+        # TODO: remove this
         series_train_val.plot(label='train_val')
         series_test.plot(label='test')
         prediction.plot(label='prediction')
         plt.legend()
         plt.show()
+        # END TODO
 
-        # save the model
         model.save(str(MODEL_DIR / 'model.pkl'))
+        model_info = {
+            "target_id": target_id,
+            "covariate_ids": covariate_ids,
+            "num_samples": probabilistic_dict.get("num_samples", 1),
+        }
+        with open(MODEL_INFO_PATH, 'w') as f:
+            yaml.dump(model_info, f)
 
         artifacts = {
-            "path_to_model_file": str(MODEL_DIR / 'model.pkl'),
+            "path_to_model_file": str(MODEL_PATH),
+            "path_to_model_info_file": str(MODEL_INFO_PATH)
         }
+        input_schema = Schema(
+            [
+                ColSpec("datetime", "ts"),
+                ColSpec("double", target_id)
+            ] +
+            [
+                ColSpec("double", covariate_id) for covariate_id in covariate_ids
+            ]
+        )
+        output_schema = Schema(
+            [
+                ColSpec("datetime", "prediction_timestamp"),
+                ColSpec("double", "prediction_mean"),
+                ColSpec("double", "prediction_std"),
+            ]
+        )
+        signature = ModelSignature(inputs=input_schema, outputs=output_schema)
+        input_example = dataset.examples_df.iloc[:max(lags_dict.values())]
 
         mlflow.pyfunc.log_model(
             artifact_path=MODEL_NAME,
-            python_model=MLflowXGBOHLCVModel(),
+            python_model=MLflowDartsXGBModel(),
             artifacts=artifacts,
-            signature=MLflowXGBOHLCVModelSignature.signature,
-            input_example=MLflowXGBOHLCVModelSignature.input_example
+            signature=signature,
+            input_example=input_example
         )
 
         # clean up
