@@ -16,6 +16,7 @@ sys.path.insert(0, '../tsboi')
 # END TODO
 from tsboi.xgb_utils.xgb_train import xgb_train_function
 from tsboi.mlflow_models.ohlcv_models import MLflowXGBOHLCVModel, MLflowXGBOHLCVModelSignature
+from tsboi.data.base_dataset import BaseDataset
 
 MODEL_NAME = 'ohlcv-xgb-{}'.format(datetime.now().strftime('%Y%m%d%H%M%S'))
 MODEL_DIR = Path('models') / MODEL_NAME
@@ -27,64 +28,22 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def load_dataset() \
-        -> Tuple[TimeSeries, TimeSeries]:
-
-    paths = sorted(glob(str(DATA_DIR / '*.csv')))
-    # TODO: remove
-    paths = paths[0:1000]
-    logger.info(f"Loading %s files from %s", len(paths), DATA_DIR)
-
-    dfs = [pd.read_csv(path, parse_dates=['ts']) for path in paths]
-    logger.info(f"Loaded %s files", len(dfs))
-
-    df = pd.concat(dfs, axis=0)
-    # remove timezone info
-    df['ts'] = df['ts'].dt.tz_localize(None)
-    df.set_index('ts', inplace=True)
-
-    # open, high, low, close, volume to float32
-    df['open'] = df['open'].astype('float32')
-    df['high'] = df['high'].astype('float32')
-    df['low'] = df['low'].astype('float32')
-    df['close'] = df['close'].astype('float32')
-    df['volume'] = df['volume'].astype('float32')
-
-    # infer frequency from model_input
-    freq = pd.infer_freq(df.index)
-    assert freq is not None, "Could not infer frequency from model_input"
-    logger.info(f"Inferred frequency: %s", freq)
-
-    print(df.head())
-    print(df.info())
-    print(df.describe())
-
-    series = TimeSeries.from_dataframe(df, value_cols="close", freq=freq)
-    covariate_open = TimeSeries.from_dataframe(df, value_cols="open", freq=freq)
-    covariate_high = TimeSeries.from_dataframe(df, value_cols="high", freq=freq)
-    covariate_low = TimeSeries.from_dataframe(df, value_cols="low", freq=freq)
-    # covariate_volume = TimeSeries.from_dataframe(covariates, value_cols="volume", freq=FREQ)
-
-    covariates = concatenate([covariate_open, covariate_high, covariate_low], axis="component")
-
-    logger.info(f"series.start_time: {series.start_time}")
-    logger.info(f"series.end_time: {series.end_time}")
-    logger.info(f"series.freq: {series.freq}")
-    logger.info(f"series.duration: {series.duration}")
-
-    logger.info(f"covariates.start_time: {covariates.start_time}")
-    logger.info(f"covariates.end_time: {covariates.end_time}")
-    logger.info(f"covariates.freq: {covariates.freq}")
-    logger.info(f"covariates.duration: {covariates.duration}")
-
-    return series, covariates
-
-
 def main() \
         -> None:
     random_state = 42
 
-    series, covariates = load_dataset()
+    dataset = BaseDataset(
+        data_dir=DATA_DIR,
+        file_pattern='*.csv',
+        target_id='close',
+        covariate_ids=['open', 'high', 'low'],
+        dtype='float32')
+
+    series, covariates = dataset.load_dataset(limit=1000)
+
+    logger.info(f"Dataset description:")
+    logger.info(f"{dataset.description}")
+
     series_train_val, series_test = series.split_after(split_point=0.8)
     covariates_train_val, covariates_test = covariates.split_after(split_point=0.8)
     series_train, series_val = series_train_val.split_after(split_point=0.8)
