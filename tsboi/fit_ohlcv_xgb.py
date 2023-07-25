@@ -41,7 +41,8 @@ def main() \
         covariate_ids=covariate_ids,
         dtype='float32')
 
-    series, covariates = dataset.load_dataset(limit=1510000, record_examples_df_n_timesteps=1000)
+    # series, covariates = dataset.load_dataset(limit=1510000, record_examples_df_n_timesteps=1000)
+    series, covariates = dataset.load_dataset(limit=60000, record_examples_df_n_timesteps=1000)
 
     logger.info(f"Dataset description:")
     logger.info(f"{dataset.description}")

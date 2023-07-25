@@ -16,7 +16,8 @@ sys.path.insert(0, '../tsboi')
 def get_df():
     paths = sorted(glob(str(DATA_DIR / '*.csv')))
     # TODO: remove
-    paths = paths[:-6320]
+    # paths = paths[:-6320]
+    paths = paths[1000:2000]
     print(f"Loading {len(paths)} files from {DATA_DIR}")
     dfs = [pd.read_csv(path) for path in paths]
     print(f"Loaded {len(dfs)} files")
