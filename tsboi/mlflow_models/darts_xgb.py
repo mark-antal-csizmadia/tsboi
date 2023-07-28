@@ -84,9 +84,9 @@ class MLflowDartsXGBModel(mlflow.pyfunc.PythonModel):
         prediction_timestamp = outputs.time_index[0]
 
         return pd.DataFrame({
-            "prediction_mean": [prediction_mean],
-            "prediction_std": [prediction_std],
-            "prediction_timestamp": [prediction_timestamp]
+            "ts": [prediction_timestamp],
+            f"{self.target_id}_mean": [prediction_mean],
+            f"{self.target_id}_std": [prediction_std]
         })
 
     def predict(
