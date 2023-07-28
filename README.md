@@ -4,6 +4,14 @@ Time-series forecasting of crypto. Fetching data with [cctx](https://github.com/
 
 ## Contributing
 
+Install [DVC](https://dvc.org/doc/install) with your preferred method. For instance, on Mac M1/M2
+
+```bash
+brew install dvc
+```
+
+> DVC is installed on the machine outside of the virtual environment due to the difficulty of installing it on M1/M2 Macs. It is assumed that the virtual environment is created with Miniconda.
+
 Create virtual environment (Python version 3.9 is tested) with preferably [Miniconda](https://docs.conda.io/en/latest/miniconda.html) and install dependencies:
 
 ```bash
