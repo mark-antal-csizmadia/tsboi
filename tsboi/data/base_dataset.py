@@ -29,14 +29,35 @@ class BaseDataset:
         self.freq = None
         self.description = None
         self.examples_df = None
+        self.train_dir = self.data_dir / 'train'
+        self.val_dir = self.data_dir / 'val'
+        self.test_dir = self.data_dir / 'test'
+        self.train_paths = sorted(glob(str(self.train_dir / self.file_pattern)))
+        self.val_paths = sorted(glob(str(self.val_dir / self.file_pattern)))
+        self.test_paths = sorted(glob(str(self.test_dir / self.file_pattern)))
 
     def load_data_from_disk(
             self,
+            subset: Optional[str] = None,
             limit: Optional[int] = None) \
             -> pd.DataFrame:
 
-        paths = sorted(glob(str(self.data_dir / self.file_pattern)))
-        logger.info(f"Loading %s files from %s", len(paths), self.data_dir)
+        if subset == 'train':
+            paths = self.train_paths
+            logger.info(f"Loading %s files from %s", len(paths), self.train_dir)
+        elif subset == 'val':
+            paths = self.val_paths
+            logger.info(f"Loading %s files from %s", len(paths), self.val_dir)
+        elif subset == 'test':
+            paths = self.test_paths
+            logger.info(f"Loading %s files from %s", len(paths), self.test_dir)
+        elif subset == 'train_val':
+            paths = self.train_paths + self.val_paths
+            logger.info(f"Loading %s files from %s, and %s", len(paths), self.train_dir, self.val_dir)
+        else:
+            paths = self.train_paths + self.val_paths + self.test_paths
+            logger.info(f"Loading %s files from %s, %s, and %s", len(paths),
+                        self.train_dir, self.val_dir, self.test_dir)
 
         dfs = [pd.read_csv(path, parse_dates=[BaseDataset.TIMESTAMP_COLUMN_NAME]) for path in paths]
         df = pd.concat(dfs, axis=0)
@@ -117,12 +138,15 @@ class BaseDataset:
     def load_dataset(
             self,
             limit: Optional[int] = None,
+            subset: Optional[str] = None,
+            record_description: bool = False,
             record_examples_df_n_timesteps: Optional[int] = None) \
             -> Tuple[TimeSeries, TimeSeries]:
 
-        df = self.load_data_from_disk(limit=limit)
+        df = self.load_data_from_disk(subset=subset, limit=limit)
         series, covariates = self.get_series_and_covariates(df=df)
-        self.description = self.describe_series_and_covariates(series=series, covariates=covariates)
+        self.description = \
+            self.describe_series_and_covariates(series=series, covariates=covariates) if record_description else None
         self.examples_df = df.reset_index().head(record_examples_df_n_timesteps) if record_examples_df_n_timesteps else None
 
         return series, covariates
