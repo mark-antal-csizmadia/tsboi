@@ -2,6 +2,7 @@ import sys
 import shutil
 import logging
 import json
+import argparse
 from datetime import datetime
 from pathlib import Path
 import matplotlib.pyplot as plt
@@ -29,9 +30,20 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
+def get_parser() \
+        -> argparse.ArgumentParser:
+
+    parser = argparse.ArgumentParser(description='Arguments for cleaning OHLCV data for model training.')
+    parser.add_argument('--dataset_digest', help='Latest commit when data.dvc was updated', type=str, required=True)
+
+    return parser
+
+
 def main() \
         -> None:
+    # TODO: add random_state to argparse
     random_state = 42
+
     target_id = 'close'
     covariate_ids = ['open', 'high', 'low']
 
@@ -45,8 +57,7 @@ def main() \
     # TODO: limit is only for testing
     # limit = 60000
     df = dataset.load_data_from_disk(subset=None, limit=100)
-    mlflow_dataset: PandasDataset = mlflow.data.from_pandas(
-        df=df, source='/tmp/dvcstore/', digest='a3d912176b57173f56ee9ee1d0b8156e38638b57')
+    mlflow_dataset: PandasDataset = mlflow.data.from_pandas(df=df, source='/tmp/dvcstore/', digest=args.dataset_digest)
 
     # series, covariates = dataset.load_dataset(subset='train', limit=limit, record_examples_df_n_timesteps=1000)
     # series, covariates = dataset.load_dataset(limit=1510000, record_examples_df_n_timesteps=1000)
@@ -163,4 +174,5 @@ def main() \
 
 
 if __name__ == '__main__':
+    args = get_parser().parse_args()
     main()

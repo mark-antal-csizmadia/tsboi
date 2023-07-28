@@ -7,7 +7,7 @@ from glob import glob
 import pandas as pd
 import matplotlib.pyplot as plt
 
-DATA_DIR = Path('data/cleaned')
+DATA_DIR = Path('data/split/test')
 
 # TODO: remove this when the code is packaged
 sys.path.insert(0, '../tsboi')
@@ -31,7 +31,7 @@ def get_df():
 if __name__ == "__main__":
     n_timesteps = 2000
 
-    logged_model = 'runs:/b0373404121a4aeda53b57ddb6faa834/ohlcv-xgb-20230728150827'
+    logged_model = 'runs:/414c12bd65b843409ab7e694c403db36/ohlcv-xgb-20230728202413'
     model_info = mlflow.artifacts.load_dict(f'{logged_model}/artifacts/model_info.json')
     target_id: str = model_info['target_id']
     covariate_ids: str = model_info['covariate_ids']
@@ -44,8 +44,6 @@ if __name__ == "__main__":
 
     # TODO: too manual here
     df = get_df()
-    df = df.iloc[70000:80000]
-    # df = df.iloc[-6320:]
     logger.info("df start ts: %s", df.iloc[0]['ts'])
     logger.info("df end ts: %s", df.iloc[0]['ts'])
 
