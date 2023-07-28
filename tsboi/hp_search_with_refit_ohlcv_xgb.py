@@ -4,7 +4,7 @@ import shutil
 from datetime import datetime
 from typing import Any, Callable, Dict, Optional, Tuple
 from pathlib import Path
-import yaml
+import json
 import matplotlib.pyplot as plt
 from darts import TimeSeries
 from darts.metrics import rmse
@@ -25,7 +25,7 @@ from tsboi.data.base_dataset import BaseDataset
 MODEL_NAME = 'ohlcv-xgb-{}'.format(datetime.now().strftime('%Y%m%d%H%M%S'))
 MODEL_DIR = Path('models') / MODEL_NAME
 MODEL_PATH = MODEL_DIR / 'model.pkl'
-MODEL_INFO_PATH = MODEL_DIR / 'model_info.yaml'
+MODEL_INFO_PATH = MODEL_DIR / 'model_info.json'
 MODEL_DIR.mkdir(parents=True, exist_ok=True)
 DATA_DIR = Path('data/cleaned')
 
@@ -229,11 +229,15 @@ def main() \
         model_info = {
             "target_id": target_id,
             "covariate_ids": covariate_ids,
+            "model.extreme_lags": {
+                "min_target_lag": model.extreme_lags[0], "max_target_lag": model.extreme_lags[1],
+                "min_past_covariate_lag": model.extreme_lags[2], "max_past_covariate_lag": model.extreme_lags[3],
+                "min_future_covariate_lag": model.extreme_lags[4], "max_future_covariate_lag": model.extreme_lags[5]
+            },
             "num_samples": probabilistic_dict.get("num_samples", 1),
         }
         with open(MODEL_INFO_PATH, 'w') as f:
-            yaml.dump(model_info, f)
-
+            json.dump(model_info, f)
         artifacts = {
             "path_to_model_file": str(MODEL_PATH),
             "path_to_model_info_file": str(MODEL_INFO_PATH)
