@@ -77,7 +77,7 @@ def main() \
         {
             'learning_rate': 0.1,
             'max_depth': 6,
-            'n_estimators': 50,
+            'n_estimators': 500,
             'reg_alpha': 0.1,
         }
 
