@@ -2,12 +2,14 @@ import sys
 import shutil
 import logging
 import json
+import argparse
 from datetime import datetime
 from pathlib import Path
 import matplotlib.pyplot as plt
 import mlflow
 from mlflow.models import ModelSignature
 from mlflow.types.schema import Schema, ColSpec
+from mlflow.data.pandas_dataset import PandasDataset
 from darts.metrics import rmse
 
 # TODO: remove this when the code is packaged
@@ -22,15 +24,26 @@ MODEL_DIR = Path('models') / MODEL_NAME
 MODEL_DIR.mkdir(parents=True, exist_ok=True)
 MODEL_PATH = MODEL_DIR / 'model.pkl'
 MODEL_INFO_PATH = MODEL_DIR / 'model_info.json'
-DATA_DIR = Path('data/cleaned')
+DATA_DIR = Path('data/split')
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
+def get_parser() \
+        -> argparse.ArgumentParser:
+
+    parser = argparse.ArgumentParser(description='Arguments for cleaning OHLCV data for model training.')
+    parser.add_argument('--dataset_digest', help='Latest commit when data.dvc was updated', type=str, required=True)
+
+    return parser
+
+
 def main() \
         -> None:
+    # TODO: add random_state to argparse
     random_state = 42
+
     target_id = 'close'
     covariate_ids = ['open', 'high', 'low']
 
@@ -41,22 +54,30 @@ def main() \
         covariate_ids=covariate_ids,
         dtype='float32')
 
-    series, covariates = dataset.load_dataset(limit=60000, record_examples_df_n_timesteps=1000)
+    # TODO: limit is only for testing
+    # limit = 60000
+    df = dataset.load_data_from_disk(subset=None, limit=100)
+    mlflow_dataset: PandasDataset = mlflow.data.from_pandas(df=df, source='/tmp/dvcstore/', digest=args.dataset_digest)
+
+    # series, covariates = dataset.load_dataset(subset='train', limit=limit, record_examples_df_n_timesteps=1000)
     # series, covariates = dataset.load_dataset(limit=1510000, record_examples_df_n_timesteps=1000)
+
+    series_train_val, covariates_train_val = dataset.load_dataset(subset='train_val')
+    series_train, covariates_train = dataset.load_dataset(subset='train')
+    series_val, covariates_val = dataset.load_dataset(subset='val')
+    series_test, covariates_test = dataset.load_dataset(subset='test')
+
+    series, covariates = dataset.load_dataset(
+        subset=None, limit=None, record_description=True, record_examples_df_n_timesteps=100)
 
     logger.info(f"Dataset description:")
     logger.info(f"{dataset.description}")
-
-    series_train_val, series_test = series.split_after(split_point=0.8)
-    covariates_train_val, covariates_test = covariates.split_after(split_point=0.8)
-    series_train, series_val = series_train_val.split_after(split_point=0.8)
-    covariates_train, covariates_val = covariates_train_val.split_after(split_point=0.8)
 
     run_params = \
         {
             'learning_rate': 0.1,
             'max_depth': 6,
-            'n_estimators': 150,
+            'n_estimators': 500,
             'reg_alpha': 0.1,
         }
 
@@ -76,7 +97,7 @@ def main() \
     probabilistic_dict = {}
 
     with mlflow.start_run(run_name=f"{MODEL_NAME}-fit") as run:
-
+        mlflow.log_input(dataset=mlflow_dataset, context="training")
         mlflow.log_params(run_params)
 
         model = xgb_train_function(
@@ -133,9 +154,9 @@ def main() \
         )
         output_schema = Schema(
             [
-                ColSpec("datetime", "prediction_timestamp"),
-                ColSpec("double", "prediction_mean"),
-                ColSpec("double", "prediction_std"),
+                ColSpec("datetime", "ts"),
+                ColSpec("double", f"{target_id}_mean"),
+                ColSpec("double", f"{target_id}_std"),
             ]
         )
         signature = ModelSignature(inputs=input_schema, outputs=output_schema)
@@ -153,4 +174,5 @@ def main() \
 
 
 if __name__ == '__main__':
+    args = get_parser().parse_args()
     main()
