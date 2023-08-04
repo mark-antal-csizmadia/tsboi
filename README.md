@@ -43,16 +43,16 @@ python -m pytest -s
 
 ### Fetch data and insert into database table
 
-For instance, to fetch 1m data for BTC/USD from Binance and insert into table `ohlcv_data_1m`, ending at 2023-07-01T00:00:00Z, and starting from whatever the exchange lets us see at this time, with chunk size 720 (i.e. fetch only 720 minutes or 12 hours at a time):
+For instance, to fetch 1m data for BTC/USD from Binance and insert into table `ohlcv_data`, ending at 2023-07-01T00:00:00Z, and starting from whatever the exchange lets us see at this time, with chunk size 720 (i.e. fetch only 720 minutes or 12 hours at a time):
 ```bash
-python tsboi/fetch_ohlcv_data_and_insert_into_table.py --table_name "ohlcv_data_1m" --symbol "BTC/USD" --exchange_name "binance" --end_timestamp "2023-07-01T00:00:00Z" --periodicity "1m" --chunk_size 720
+python examples/fetch_data.py --table_name "ohlcv_data" --symbol "BTC/USD" --exchange_name "binance" --end_timestamp "2023-07-01T00:00:00Z" --periodicity "1m" --chunk_size 720
 ```
 
 ### Prepare data for training
 
 For instance, to prepare per minute data for training, for BTC/USD from Binance, ending at 2023-07-01T00:00:00Z, and starting from 2020-08-12T00:00:00Z, with chunk size 60 (i.e. in each of the files, there will be 60 minutes of data, so in overall this will be 25272 files at `data/raw/`):
 ```bash
- python tsboi/prepare_ohlcv_data.py --data_dir "data/raw" --table_name "ohlcv_data" --from_timestamp "2020-08-12T00:00:00Z" --end_timestamp "2023-07-01T00:00:00Z" --periodicity "minute" --chunk_size 60
+ python examples/pull_data.py --data_dir "data/raw" --table_name "ohlcv_data" --from_timestamp "2020-08-12T00:00:00Z" --end_timestamp "2023-07-01T00:00:00Z" --periodicity "minute" --chunk_size 60
 ```
 
 ### Clean data for training
@@ -61,7 +61,16 @@ For instance, to prepare per minute data for training, for BTC/USD from Binance,
 
 For instance, to clean per minute data for training, for BTC/USD from Binance, ending at 2023-07-01T00:00:00Z, and starting from 2020-08-12T00:00:00Z, with chunk size 60 (i.e. in each of the files, there will be 60 minutes of data, so in overall this will be 25272 files at `data/cleaned/`):
 ```bash
-python tsboi/clean_ohlcv_data.py --data_dir_raw "data/raw" --data_dir_cleaned "data/cleaned"
+python examples/clean_data.py --data_dir_raw "data/raw" --data_dir_cleaned "data/cleaned"
+```
+
+### Split data for training
+
+> Splitting is done by either number of observations in the train, validation and test subsets, or by ratio of all observations in the train, validation and test subsets, or by timestamp splitting of all observations.
+
+For instance, to split per minute data for training, for BTC/USD from Binance, ending at 2023-07-01T00:00:00Z, and starting from 2020-08-12T00:00:00Z, with chunk size 60 (i.e. in each of the files, there will be 60 minutes of data, so in overall this will be 25272 files at `data/split/train`, `data/split/val` and `data/split/test`):
+```bash
+python examples/split_data.py --data_dir_cleaned "data/cleaned" --data_dir_split "data/split" --ratio --ratio_train 0.8 --ratio_val 0.12
 ```
 
 ### Train
@@ -71,7 +80,11 @@ python tsboi/clean_ohlcv_data.py --data_dir_raw "data/raw" --data_dir_cleaned "d
 #### Simple fit
 
 ```bash
-python tsboi/fit_ohlcv_xgb.py
+python examples/fit_xgb.py --dataset_digest=9c3bf8a86cf74d9f84fd38d86087314e70766a95 --random_state=42
+```
+where `dataset_digest` is the digest of the dataset in the database, obtained by running
+```bash
+git log -n 1 --pretty=format:%H -- data.dvc
 ```
 
 #### Hyperparameter tuning and refit

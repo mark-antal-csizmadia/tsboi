@@ -4,9 +4,6 @@ import logging
 import shutil
 from pathlib import Path
 
-# TODO: remove this when the code is packaged
-sys.path.insert(0, '../tsboi')
-# END TODO
 from tsboi.data.base_cleaner import BaseCleaner
 
 logging.basicConfig(level=logging.INFO)

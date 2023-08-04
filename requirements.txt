@@ -8,153 +8,254 @@ adagio==0.2.4
     # via
     #   fugue
     #   qpd
+    #   tsboi
 aiodns==3.0.0
-    # via ccxt
+    # via
+    #   ccxt
+    #   tsboi
 aiohttp==3.8.4
     # via
     #   ccxt
     #   fsspec
+    #   tsboi
 aiosignal==1.3.1
-    # via aiohttp
+    # via
+    #   aiohttp
+    #   tsboi
 alembic==1.11.1
-    # via mlflow
+    # via
+    #   mlflow
+    #   tsboi
 ansi2html==1.8.0
-    # via jupyter-dash
+    # via
+    #   jupyter-dash
+    #   tsboi
 antlr4-python3-runtime==4.11.1
     # via
     #   fugue-sql-antlr
     #   qpd
+    #   tsboi
 appdirs==1.4.4
-    # via fs
+    # via
+    #   fs
+    #   tsboi
 appnope==0.1.3
     # via
     #   ipykernel
     #   ipython
+    #   tsboi
 asttokens==2.2.1
-    # via stack-data
+    # via
+    #   stack-data
+    #   tsboi
 async-timeout==4.0.2
-    # via aiohttp
+    # via
+    #   aiohttp
+    #   tsboi
 attrs==23.1.0
-    # via aiohttp
+    # via
+    #   aiohttp
+    #   tsboi
 backcall==0.2.0
-    # via ipython
+    # via
+    #   ipython
+    #   tsboi
 blinker==1.6.2
-    # via flask
+    # via
+    #   flask
+    #   tsboi
 catboost==1.2
-    # via darts
+    # via
+    #   darts
+    #   tsboi
 ccxt==4.0.30
-    # via -r requirements.in
+    # via
+    #   -r requirements.in
+    #   tsboi
 certifi==2023.5.7
     # via
     #   ccxt
     #   requests
+    #   tsboi
 cffi==1.15.1
     # via
     #   cryptography
     #   pycares
+    #   tsboi
 charset-normalizer==3.2.0
     # via
     #   aiohttp
     #   requests
+    #   tsboi
 click==8.1.5
     # via
     #   dask
     #   databricks-cli
     #   flask
     #   mlflow
+    #   tsboi
 cloudpickle==2.2.1
     # via
     #   dask
     #   hyperopt
     #   mlflow
     #   shap
+    #   tsboi
 cmdstanpy==1.1.0
-    # via prophet
+    # via
+    #   prophet
+    #   tsboi
 comm==0.1.3
-    # via ipykernel
+    # via
+    #   ipykernel
+    #   tsboi
 contourpy==1.1.0
-    # via matplotlib
+    # via
+    #   matplotlib
+    #   tsboi
 convertdate==2.4.0
-    # via prophet
+    # via
+    #   prophet
+    #   tsboi
 cryptography==41.0.2
-    # via ccxt
+    # via
+    #   ccxt
+    #   tsboi
 cycler==0.11.0
-    # via matplotlib
+    # via
+    #   matplotlib
+    #   tsboi
 cython==3.0.0
-    # via pmdarima
+    # via
+    #   pmdarima
+    #   tsboi
 darts==0.24.0
-    # via -r requirements.in
+    # via
+    #   -r requirements.in
+    #   tsboi
 dash==2.9.3
     # via
     #   jupyter-dash
     #   plotly-resampler
+    #   tsboi
 dash-core-components==2.0.0
-    # via dash
+    # via
+    #   dash
+    #   tsboi
 dash-html-components==2.0.0
-    # via dash
+    # via
+    #   dash
+    #   tsboi
 dash-table==5.0.0
-    # via dash
+    # via
+    #   dash
+    #   tsboi
 dask==2023.7.0
-    # via -r requirements.in
+    # via
+    #   -r requirements.in
+    #   tsboi
 databricks-cli==0.17.7
-    # via mlflow
+    # via
+    #   mlflow
+    #   tsboi
 debugpy==1.6.7
-    # via ipykernel
+    # via
+    #   ipykernel
+    #   tsboi
 decorator==5.1.1
-    # via ipython
+    # via
+    #   ipython
+    #   tsboi
 docker==6.1.3
-    # via mlflow
+    # via
+    #   mlflow
+    #   tsboi
 entrypoints==0.4
-    # via mlflow
+    # via
+    #   mlflow
+    #   tsboi
 ephem==4.1.4
-    # via lunarcalendar
+    # via
+    #   lunarcalendar
+    #   tsboi
 exceptiongroup==1.1.2
-    # via pytest
+    # via
+    #   pytest
+    #   tsboi
 executing==1.2.0
-    # via stack-data
+    # via
+    #   stack-data
+    #   tsboi
 filelock==3.12.2
-    # via torch
+    # via
+    #   torch
+    #   tsboi
 flask==2.3.2
     # via
     #   dash
     #   jupyter-dash
     #   mlflow
+    #   tsboi
 fonttools==4.41.0
-    # via matplotlib
+    # via
+    #   matplotlib
+    #   tsboi
 frozenlist==1.4.0
     # via
     #   aiohttp
     #   aiosignal
+    #   tsboi
 fs==2.4.16
-    # via triad
+    # via
+    #   triad
+    #   tsboi
 fsspec[http]==2023.6.0
     # via
     #   dask
     #   pytorch-lightning
     #   triad
+    #   tsboi
 fugue==0.8.5
-    # via statsforecast
+    # via
+    #   statsforecast
+    #   tsboi
 fugue-sql-antlr==0.1.6
-    # via fugue
+    # via
+    #   fugue
+    #   tsboi
 future==0.18.3
-    # via hyperopt
+    # via
+    #   hyperopt
+    #   tsboi
 gitdb==4.0.10
-    # via gitpython
+    # via
+    #   gitpython
+    #   tsboi
 gitpython==3.1.32
-    # via mlflow
+    # via
+    #   mlflow
+    #   tsboi
 graphviz==0.20.1
-    # via catboost
+    # via
+    #   catboost
+    #   tsboi
 gunicorn==20.1.0
-    # via mlflow
+    # via
+    #   mlflow
+    #   tsboi
 holidays==0.29
     # via
     #   darts
     #   prophet
+    #   tsboi
 hyperopt==0.2.7
-    # via -r requirements.in
+    # via
+    #   -r requirements.in
+    #   tsboi
 idna==3.4
     # via
     #   requests
+    #   tsboi
     #   yarl
 importlib-metadata==6.8.0
     # via
@@ -163,22 +264,33 @@ importlib-metadata==6.8.0
     #   jupyter-client
     #   markdown
     #   mlflow
+    #   tsboi
 importlib-resources==6.0.0
     # via
     #   matplotlib
     #   prophet
+    #   tsboi
 iniconfig==2.0.0
-    # via pytest
+    # via
+    #   pytest
+    #   tsboi
 ipykernel==6.24.0
-    # via jupyter-dash
+    # via
+    #   jupyter-dash
+    #   tsboi
 ipython==8.14.0
     # via
     #   ipykernel
     #   jupyter-dash
+    #   tsboi
 itsdangerous==2.1.2
-    # via flask
+    # via
+    #   flask
+    #   tsboi
 jedi==0.18.2
-    # via ipython
+    # via
+    #   ipython
+    #   tsboi
 jinja2==3.1.2
     # via
     #   flask
@@ -186,42 +298,65 @@ jinja2==3.1.2
     #   fugue-sql-antlr
     #   mlflow
     #   torch
+    #   tsboi
 joblib==1.3.1
     # via
     #   darts
     #   pmdarima
     #   pyod
     #   scikit-learn
+    #   tsboi
 jupyter-client==8.3.0
-    # via ipykernel
+    # via
+    #   ipykernel
+    #   tsboi
 jupyter-core==5.3.1
     # via
     #   ipykernel
     #   jupyter-client
+    #   tsboi
 jupyter-dash==0.4.2
-    # via plotly-resampler
+    # via
+    #   plotly-resampler
+    #   tsboi
 kiwisolver==1.4.4
-    # via matplotlib
+    # via
+    #   matplotlib
+    #   tsboi
 lightgbm==4.0.0
-    # via darts
+    # via
+    #   darts
+    #   tsboi
 lightning-utilities==0.9.0
     # via
     #   pytorch-lightning
     #   torchmetrics
+    #   tsboi
 llvmlite==0.40.1
-    # via numba
+    # via
+    #   numba
+    #   tsboi
 locket==1.0.0
-    # via partd
+    # via
+    #   partd
+    #   tsboi
 lunarcalendar==0.0.9
-    # via prophet
+    # via
+    #   prophet
+    #   tsboi
 mako==1.2.4
-    # via alembic
+    # via
+    #   alembic
+    #   tsboi
 markdown==3.4.3
-    # via mlflow
+    # via
+    #   mlflow
+    #   tsboi
 markupsafe==2.1.3
     # via
     #   jinja2
     #   mako
+    #   tsboi
     #   werkzeug
 matplotlib==3.7.2
     # via
@@ -232,33 +367,45 @@ matplotlib==3.7.2
     #   prophet
     #   pyod
     #   statsforecast
+    #   tsboi
 matplotlib-inline==0.1.6
     # via
     #   ipykernel
     #   ipython
+    #   tsboi
 mlflow==2.5.0
-    # via -r requirements.in
+    # via
+    #   -r requirements.in
+    #   tsboi
 mpmath==1.3.0
-    # via sympy
+    # via
+    #   sympy
+    #   tsboi
 multidict==6.0.4
     # via
     #   aiohttp
+    #   tsboi
     #   yarl
 nest-asyncio==1.5.6
     # via
     #   ipykernel
     #   jupyter-dash
+    #   tsboi
 networkx==3.1
     # via
     #   hyperopt
     #   torch
+    #   tsboi
 nfoursid==1.0.1
-    # via darts
+    # via
+    #   darts
+    #   tsboi
 numba==0.57.1
     # via
     #   pyod
     #   shap
     #   statsforecast
+    #   tsboi
 numpy==1.24.4
     # via
     #   catboost
@@ -288,12 +435,17 @@ numpy==1.24.4
     #   tensorboardx
     #   torchmetrics
     #   triad
+    #   tsboi
     #   xarray
     #   xgboost
 oauthlib==3.2.2
-    # via databricks-cli
+    # via
+    #   databricks-cli
+    #   tsboi
 orjson==3.9.2
-    # via plotly-resampler
+    # via
+    #   plotly-resampler
+    #   tsboi
 packaging==23.1
     # via
     #   dask
@@ -309,6 +461,7 @@ packaging==23.1
     #   statsmodels
     #   tensorboardx
     #   torchmetrics
+    #   tsboi
     #   xarray
 pandas==1.5.3
     # via
@@ -326,80 +479,136 @@ pandas==1.5.3
     #   statsforecast
     #   statsmodels
     #   triad
+    #   tsboi
     #   xarray
 parso==0.8.3
-    # via jedi
+    # via
+    #   jedi
+    #   tsboi
 partd==1.4.0
-    # via dask
+    # via
+    #   dask
+    #   tsboi
 patsy==0.5.3
-    # via statsmodels
+    # via
+    #   statsmodels
+    #   tsboi
 pexpect==4.8.0
-    # via ipython
+    # via
+    #   ipython
+    #   tsboi
 pickleshare==0.7.5
-    # via ipython
+    # via
+    #   ipython
+    #   tsboi
 pillow==10.0.0
-    # via matplotlib
+    # via
+    #   matplotlib
+    #   tsboi
 platformdirs==3.9.1
-    # via jupyter-core
+    # via
+    #   jupyter-core
+    #   tsboi
 plotly==5.15.0
     # via
     #   catboost
     #   dash
     #   plotly-resampler
     #   statsforecast
+    #   tsboi
 plotly-resampler==0.8.3.2
-    # via statsforecast
+    # via
+    #   statsforecast
+    #   tsboi
 pluggy==1.2.0
-    # via pytest
+    # via
+    #   pytest
+    #   tsboi
 pmdarima==2.0.3
     # via
     #   darts
     #   tbats
+    #   tsboi
 prompt-toolkit==3.0.39
-    # via ipython
+    # via
+    #   ipython
+    #   tsboi
 prophet==1.1.4
-    # via darts
+    # via
+    #   darts
+    #   tsboi
 protobuf==4.23.4
     # via
     #   mlflow
     #   tensorboardx
+    #   tsboi
 psutil==5.9.5
-    # via ipykernel
+    # via
+    #   ipykernel
+    #   tsboi
 psycopg2-binary==2.9.6
-    # via -r requirements.in
+    # via
+    #   -r requirements.in
+    #   tsboi
 ptyprocess==0.7.0
-    # via pexpect
+    # via
+    #   pexpect
+    #   tsboi
 pure-eval==0.2.2
-    # via stack-data
+    # via
+    #   stack-data
+    #   tsboi
 py4j==0.10.9.7
     # via
     #   hyperopt
     #   pyspark
+    #   tsboi
 pyarrow==12.0.1
     # via
     #   fugue
     #   mlflow
     #   triad
+    #   tsboi
 pycares==4.3.0
-    # via aiodns
+    # via
+    #   aiodns
+    #   tsboi
 pycparser==2.21
-    # via cffi
+    # via
+    #   cffi
+    #   tsboi
 pydantic==1.10.0
-    # via -r requirements.in
+    # via
+    #   -r requirements.in
+    #   tsboi
 pygments==2.15.1
-    # via ipython
+    # via
+    #   ipython
+    #   tsboi
 pyjwt==2.7.0
-    # via databricks-cli
+    # via
+    #   databricks-cli
+    #   tsboi
 pymeeus==0.5.12
-    # via convertdate
+    # via
+    #   convertdate
+    #   tsboi
 pyod==1.1.0
-    # via darts
+    # via
+    #   darts
+    #   tsboi
 pyparsing==3.0.9
-    # via matplotlib
+    # via
+    #   matplotlib
+    #   tsboi
 pyspark==3.4.1
-    # via -r requirements.in
+    # via
+    #   -r requirements.in
+    #   tsboi
 pytest==7.3.2
-    # via -r requirements.in
+    # via
+    #   -r requirements.in
+    #   tsboi
 python-dateutil==2.8.2
     # via
     #   holidays
@@ -408,28 +617,40 @@ python-dateutil==2.8.2
     #   matplotlib
     #   pandas
     #   prophet
+    #   tsboi
 python-dotenv==1.0.0
-    # via -r requirements.in
+    # via
+    #   -r requirements.in
+    #   tsboi
 pytorch-lightning==2.0.5
-    # via darts
+    # via
+    #   darts
+    #   tsboi
 pytz==2023.3
     # via
     #   lunarcalendar
     #   mlflow
     #   pandas
+    #   tsboi
 pyyaml==6.0.1
     # via
     #   dask
     #   mlflow
     #   pytorch-lightning
+    #   tsboi
 pyzmq==25.1.0
     # via
     #   ipykernel
     #   jupyter-client
+    #   tsboi
 qpd==0.4.4
-    # via fugue
+    # via
+    #   fugue
+    #   tsboi
 querystring-parser==1.2.4
-    # via mlflow
+    # via
+    #   mlflow
+    #   tsboi
 requests==2.31.0
     # via
     #   ccxt
@@ -439,8 +660,11 @@ requests==2.31.0
     #   fsspec
     #   jupyter-dash
     #   mlflow
+    #   tsboi
 retrying==1.3.4
-    # via jupyter-dash
+    # via
+    #   jupyter-dash
+    #   tsboi
 scikit-learn==1.3.0
     # via
     #   darts
@@ -449,6 +673,7 @@ scikit-learn==1.3.0
     #   pyod
     #   shap
     #   tbats
+    #   tsboi
 scipy==1.11.1
     # via
     #   catboost
@@ -463,9 +688,12 @@ scipy==1.11.1
     #   statsforecast
     #   statsmodels
     #   tbats
+    #   tsboi
     #   xgboost
 shap==0.42.1
-    # via darts
+    # via
+    #   darts
+    #   tsboi
 six==1.16.0
     # via
     #   asttokens
@@ -479,56 +707,90 @@ six==1.16.0
     #   querystring-parser
     #   retrying
     #   triad
+    #   tsboi
 slicer==0.0.7
-    # via shap
+    # via
+    #   shap
+    #   tsboi
 smmap==5.0.0
-    # via gitdb
+    # via
+    #   gitdb
+    #   tsboi
 sqlalchemy==2.0.19
     # via
     #   alembic
     #   mlflow
+    #   tsboi
 sqlglot==17.4.1
-    # via fugue
+    # via
+    #   fugue
+    #   tsboi
 sqlparse==0.4.4
-    # via mlflow
+    # via
+    #   mlflow
+    #   tsboi
 stack-data==0.6.2
-    # via ipython
+    # via
+    #   ipython
+    #   tsboi
 statsforecast==1.5.0
-    # via darts
+    # via
+    #   darts
+    #   tsboi
 statsmodels==0.14.0
     # via
     #   darts
     #   pmdarima
     #   statsforecast
+    #   tsboi
 sympy==1.12
-    # via torch
+    # via
+    #   torch
+    #   tsboi
 tabulate==0.9.0
-    # via databricks-cli
+    # via
+    #   databricks-cli
+    #   tsboi
 tbats==1.1.3
-    # via darts
+    # via
+    #   darts
+    #   tsboi
 tenacity==8.2.2
-    # via plotly
+    # via
+    #   plotly
+    #   tsboi
 tensorboardx==2.6.1
-    # via darts
+    # via
+    #   darts
+    #   tsboi
 threadpoolctl==3.2.0
-    # via scikit-learn
+    # via
+    #   scikit-learn
+    #   tsboi
 tomli==2.0.1
-    # via pytest
+    # via
+    #   pytest
+    #   tsboi
 toolz==0.12.0
     # via
     #   dask
     #   partd
+    #   tsboi
 torch==2.0.1
     # via
     #   darts
     #   pytorch-lightning
     #   torchmetrics
+    #   tsboi
 torchmetrics==1.0.1
-    # via pytorch-lightning
+    # via
+    #   pytorch-lightning
+    #   tsboi
 tornado==6.3.2
     # via
     #   ipykernel
     #   jupyter-client
+    #   tsboi
 tqdm==4.65.0
     # via
     #   cmdstanpy
@@ -538,8 +800,11 @@ tqdm==4.65.0
     #   pytorch-lightning
     #   shap
     #   statsforecast
+    #   tsboi
 trace-updater==0.0.9.1
-    # via plotly-resampler
+    # via
+    #   plotly-resampler
+    #   tsboi
 traitlets==5.9.0
     # via
     #   comm
@@ -548,12 +813,16 @@ traitlets==5.9.0
     #   jupyter-client
     #   jupyter-core
     #   matplotlib-inline
+    #   tsboi
 triad==0.9.1
     # via
     #   adagio
     #   fugue
     #   fugue-sql-antlr
     #   qpd
+    #   tsboi
+tsboi @ file:///Users/markcsizmadia/Code/tsboi
+    # via -r requirements.in
 typing-extensions==4.7.1
     # via
     #   alembic
@@ -563,30 +832,44 @@ typing-extensions==4.7.1
     #   pytorch-lightning
     #   sqlalchemy
     #   torch
+    #   tsboi
 urllib3==1.26.16
     # via
     #   databricks-cli
     #   docker
     #   pmdarima
     #   requests
+    #   tsboi
 wcwidth==0.2.6
-    # via prompt-toolkit
+    # via
+    #   prompt-toolkit
+    #   tsboi
 websocket-client==1.6.1
-    # via docker
+    # via
+    #   docker
+    #   tsboi
 werkzeug==2.3.6
-    # via flask
+    # via
+    #   flask
+    #   tsboi
 xarray==2023.7.0
-    # via darts
+    # via
+    #   darts
+    #   tsboi
 xgboost==1.7.6
-    # via darts
+    # via
+    #   darts
+    #   tsboi
 yarl==1.9.2
     # via
     #   aiohttp
     #   ccxt
+    #   tsboi
 zipp==3.16.2
     # via
     #   importlib-metadata
     #   importlib-resources
+    #   tsboi
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools

@@ -1,12 +1,7 @@
-import sys
 import argparse
 import logging
 from typing import List
 import pandas as pd
-
-# TODO: remove this when the code is packaged
-sys.path.insert(0, '../tsboi')
-# END TODO
 
 from tsboi.data.pg_controller import PostgresController
 from tsboi.data.cctx_fetcher import CCTXFetcher
@@ -14,13 +9,6 @@ from settings import PG_USER, PG_DATABASE, PG_PASSWORD
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-PG_CONTROLLER = PostgresController(
-        database=PG_DATABASE,
-        user=PG_USER,
-        password=PG_PASSWORD,
-        host='localhost',
-        port='5432')
 
 
 def get_parser() \
@@ -37,6 +25,8 @@ def get_parser() \
                         choices=["1m"])
     parser.add_argument('--chunk_size', help='Number of data points to fetch at a time. Addresses exchange API limits.',
                         type=int, required=True)
+    parser.add_argument('--postgres_host', help='Postgres host.', type=str, required=False, default="localhost",
+                        choices=["localhost", "postgres"])
     return parser
 
 
@@ -49,7 +39,7 @@ def save_chunk_function(
         volume_values: List[float]) \
         -> str:
 
-    PG_CONTROLLER.insert_ohlcv_records(
+    pg_controller.insert_ohlcv_records(
         table_name=table_name,
         tss=tss,
         open_values=open_values,
@@ -68,7 +58,7 @@ def main():
     logger.info(f"Fetching data for {symbol} from {exchange_name} exchange, and inserting it into table {table_name}.")
 
     fetcher = CCTXFetcher(exchange_name=exchange_name)
-    PG_CONTROLLER.create_ohlcv_table(table_name=table_name)
+    pg_controller.create_ohlcv_table(table_name=table_name)
 
     number_of_data_points = fetcher.fetch_ohlcv_data(
         save_chunk_function=save_chunk_function,
@@ -90,5 +80,13 @@ if __name__ == "__main__":
     end_timestamp = args.end_timestamp
     periodicity = args.periodicity
     chunk_size = args.chunk_size
+    postgres_host = args.postgres_host
+
+    pg_controller = PostgresController(
+        database=PG_DATABASE,
+        user=PG_USER,
+        password=PG_PASSWORD,
+        host=postgres_host,
+        port='5432')
 
     main()
