@@ -14,7 +14,8 @@ from mlflow.data.pandas_dataset import PandasDataset
 from darts.metrics import rmse
 from darts.dataprocessing.pipeline import Pipeline
 from darts.dataprocessing.transformers import Scaler, MissingValuesFiller
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, RobustScaler
+
 
 # TODO: remove this when the code is packaged
 sys.path.insert(0, '../tsboi')
@@ -48,7 +49,7 @@ def get_parser() \
 def main() \
         -> None:
     # TODO: add random_state to argparse
-    random_state = 42
+    random_state = None
 
     target_id = 'close'
     covariate_ids = ['open', 'high', 'low']
@@ -71,7 +72,8 @@ def main() \
     # series_train_val, covariates_train_val = dataset.load_dataset(subset='train_val')
     series_train, covariates_train = dataset.load_dataset(subset='train')
     series_val, covariates_val = dataset.load_dataset(subset='val')
-    series_test, covariates_test = dataset.load_dataset(subset='test', record_description=True, record_examples_df_n_timesteps=100)
+    series_test, covariates_test = \
+        dataset.load_dataset(subset='test', record_description=True, record_examples_df_n_timesteps=100)
 
     series_train_val = series_train.concatenate(series_val, axis=0)
     covariates_train_val = covariates_train.concatenate(covariates_val, axis=0)
@@ -87,7 +89,7 @@ def main() \
     logger.info(f"Dataset description:")
     logger.info(f"{dataset.description}")
 
-    pipeline_target = Pipeline([MissingValuesFiller(), Scaler(MinMaxScaler())])
+    pipeline_target = Pipeline([MissingValuesFiller(), Scaler(RobustScaler())])
     series_train_val_preprocessed = pipeline_target.fit_transform(series_train_val)
     series_test_preprocessed = pipeline_target.transform(series_test)
     joblib.dump(pipeline_target, TARGET_PIPELINE_PATH)

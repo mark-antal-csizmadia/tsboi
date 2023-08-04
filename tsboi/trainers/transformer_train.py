@@ -1,5 +1,6 @@
 from typing import Dict, Any, Optional, Union
 import time
+import multiprocessing as mp
 import torch
 from darts import TimeSeries
 from darts.models import TransformerModel
@@ -30,11 +31,11 @@ def transformer_train_function(
     model = TransformerModel(
         input_chunk_length=lags,
         output_chunk_length=1,
-        batch_size=256,
+        batch_size=1024,
         n_epochs=kwargs["n_epochs"],
         model_name=model_name if model_name else int(time.time()),
         nr_epochs_val_period=1,
-        d_model=128,
+        d_model=64,
         nhead=4,
         num_encoder_layers=3,
         num_decoder_layers=3,
@@ -45,9 +46,7 @@ def transformer_train_function(
         save_checkpoints=True,
         force_reset=True,
         optimizer_cls=torch.optim.AdamW,
-        optimizer_kwargs={"lr": 1e-5, "weight_decay": 1e-2},
-        lr_scheduler_cls=torch.optim.lr_scheduler.ExponentialLR,
-        lr_scheduler_kwargs={"gamma": 0.09},
+        optimizer_kwargs={"lr": 1e-3},
         pl_trainer_kwargs={"accelerator": "auto", "devices": "auto"}
     )
 
@@ -58,7 +57,8 @@ def transformer_train_function(
         val_series=series_val,
         val_past_covariates=covariates_val,
         val_future_covariates=None,
-        verbose=True
+        verbose=True,
+        num_loader_workers=mp.cpu_count(),
     )
 
     return model
