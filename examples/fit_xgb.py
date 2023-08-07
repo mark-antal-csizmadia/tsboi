@@ -1,4 +1,3 @@
-import sys
 import shutil
 import logging
 import json
@@ -12,9 +11,6 @@ from mlflow.types.schema import Schema, ColSpec
 from mlflow.data.pandas_dataset import PandasDataset
 from darts.metrics import rmse
 
-# TODO: remove this when the code is packaged
-sys.path.insert(0, '../tsboi')
-# END TODO
 from tsboi.trainers.xgb_train import xgb_train_function
 from tsboi.mlflow_models.darts_xgb import MLflowDartsXGBModel
 from tsboi.data.base_dataset import BaseDataset
@@ -35,14 +31,13 @@ def get_parser() \
 
     parser = argparse.ArgumentParser(description='Arguments for cleaning OHLCV data for model training.')
     parser.add_argument('--dataset_digest', help='Latest commit when data.dvc was updated', type=str, required=True)
+    parser.add_argument('--random_state', help='Random state for reproducibility', type=int, default=42)
 
     return parser
 
 
 def main() \
         -> None:
-    # TODO: add random_state to argparse
-    random_state = 42
 
     target_id = 'close'
     covariate_ids = ['open', 'high', 'low']
@@ -54,21 +49,18 @@ def main() \
         covariate_ids=covariate_ids,
         dtype='float32')
 
-    # TODO: limit is only for testing
-    # limit = 60000
-    df = dataset.load_data_from_disk(subset=None, limit=100)
-    mlflow_dataset: PandasDataset = mlflow.data.from_pandas(df=df, source='/tmp/dvcstore/', digest=args.dataset_digest)
-
-    # series, covariates = dataset.load_dataset(subset='train', limit=limit, record_examples_df_n_timesteps=1000)
-    # series, covariates = dataset.load_dataset(limit=1510000, record_examples_df_n_timesteps=1000)
-
-    series_train_val, covariates_train_val = dataset.load_dataset(subset='train_val')
     series_train, covariates_train = dataset.load_dataset(subset='train')
     series_val, covariates_val = dataset.load_dataset(subset='val')
-    series_test, covariates_test = dataset.load_dataset(subset='test')
+    series_test, covariates_test = \
+        dataset.load_dataset(subset='test', record_description=True, record_examples_df_n_timesteps=100)
 
-    series, covariates = dataset.load_dataset(
-        subset=None, limit=None, record_description=True, record_examples_df_n_timesteps=100)
+    series_train_val = series_train.concatenate(series_val, axis=0)
+    covariates_train_val = covariates_train.concatenate(covariates_val, axis=0)
+    series = series_train_val.concatenate(series_test, axis=0)
+    covariates = covariates_train_val.concatenate(covariates_test, axis=0)
+
+    mlflow_dataset: PandasDataset = \
+        mlflow.data.from_pandas(df=dataset.examples_df, source='/tmp/dvcstore/', digest=args.dataset_digest)
 
     logger.info(f"Dataset description:")
     logger.info(f"{dataset.description}")
@@ -77,7 +69,7 @@ def main() \
         {
             'learning_rate': 0.1,
             'max_depth': 6,
-            'n_estimators': 500,
+            'n_estimators': 200,
             'reg_alpha': 0.1,
         }
 
@@ -115,7 +107,7 @@ def main() \
             num_samples=probabilistic_dict.get("num_samples", 1),
         )
 
-        print(f"Test RMSE: {rmse(series_test, prediction)}")
+        logger.info(f"Test RMSE: {rmse(series_test, prediction):4f}")
 
         # TODO: remove this
         series_train_val.plot(label='train_val')
@@ -175,4 +167,5 @@ def main() \
 
 if __name__ == '__main__':
     args = get_parser().parse_args()
+    random_state = args.random_state
     main()

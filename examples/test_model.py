@@ -29,9 +29,9 @@ def get_df():
 
 
 if __name__ == "__main__":
-    n_timesteps = 4000
+    n_timesteps = 200
 
-    logged_model = 'runs:/9c70227ae0114fd092a1929bb6eae879/ohlcv-transformer-20230804104441'
+    logged_model = 'runs:/49330b38a50e45f08bd492bde67bb873/ohlcv-xgb-20230804172006'
     model_info = mlflow.artifacts.load_dict(f'{logged_model}/artifacts/model_info.json')
     target_id: str = model_info['target_id']
     covariate_ids: str = model_info['covariate_ids']

@@ -5,9 +5,6 @@ import shutil
 from pathlib import Path
 import pandas as pd
 
-# TODO: remove this when the code is packaged
-sys.path.insert(0, '../tsboi')
-# END TODO
 from tsboi.data.base_splitter import BaseSplitter
 
 logging.basicConfig(level=logging.INFO)

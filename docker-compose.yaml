@@ -4,6 +4,12 @@ services:
   postgres:
     container_name: postgres
     image: postgres:latest
+    profiles: ["tests", "from_fetch_to_train"]
+    healthcheck:
+      test: /usr/bin/pg_isready
+      interval: 5s
+      timeout: 10s
+      retries: 120
     environment:
       POSTGRES_USER: testuser
       POSTGRES_PASSWORD: qwerty
@@ -13,15 +19,33 @@ services:
     ports:
       - "5432:5432"
 
-  run_tests:
-    container_name: run_tests
+  tests:
+    container_name: tests
     build:
       context: .
       dockerfile: Dockerfile
     image: tsboi
+    profiles: ["tests"]
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     command: python3 -m pytest -s --postgres_host=postgres
+    environment:
+      PG_DATABASE: btcusddb
+      PG_USER: testuser
+      PG_PASSWORD: qwerty
+
+  fetch_data:
+    container_name: fetch_data
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: tsboi
+    profiles: ["from_fetch_to_train"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: python3 examples/fetch_data.py --table_name "btc_usd_ohlcv_data_1m" --symbol "BTC/USD" --exchange_name "binance" --end_timestamp "2023-07-01T00:00:00Z" --periodicity "1m" --chunk_size 720 --postgres_host postgres
     environment:
       PG_DATABASE: btcusddb
       PG_USER: testuser

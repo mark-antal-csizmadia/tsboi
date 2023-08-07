@@ -7,3 +7,4 @@ COPY requirements.in requirements.in
 RUN pip-compile -o requirements.txt requirements.in -v
 RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
+RUN python3 setup.py install

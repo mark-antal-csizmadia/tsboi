@@ -1,13 +1,9 @@
-import sys
 import argparse
 import logging
 import shutil
 from pathlib import Path
 import pandas as pd
 
-# TODO: remove this when the code is packaged
-sys.path.insert(0, '../tsboi')
-# END TODO
 from tsboi.data.pg_controller import PostgresController
 from settings import PG_DATABASE, PG_USER, PG_PASSWORD
 
@@ -30,6 +26,8 @@ def get_parser() \
                         choices=["minute"])
     parser.add_argument('--chunk_size', help='Number of data points to fetch and store as a chunk in a file.',
                         type=int, required=True)
+    parser.add_argument('--postgres_host', help='Postgres host.', type=str, required=False, default="localhost",
+                        choices=["localhost", "postgres"])
     return parser
 
 
@@ -41,6 +39,7 @@ if __name__ == "__main__":
     end_timestamp = args.end_timestamp
     periodicity = args.periodicity
     chunk_size = args.chunk_size
+    postgres_host = args.postgres_host
 
     # if data dir exists, delete and recreate
     shutil.rmtree(data_dir, ignore_errors=True)
@@ -55,7 +54,7 @@ if __name__ == "__main__":
     logger.info("Fetching data from %s to %s ...", from_timestamp, end_timestamp)
 
     controller = \
-        PostgresController(database=PG_DATABASE, user=PG_USER, password=PG_PASSWORD, host='localhost', port='5432')
+        PostgresController(database=PG_DATABASE, user=PG_USER, password=PG_PASSWORD, host=postgres_host, port='5432')
     paths = controller.get_ohlcv_records(
         table_name=table_name,
         # UTC time
