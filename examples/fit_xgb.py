@@ -159,7 +159,9 @@ def main() \
             python_model=MLflowDartsXGBModel(),
             artifacts=artifacts,
             signature=signature,
-            input_example=input_example
+            input_example=input_example,
+            code_path=["tsboi"],
+            pip_requirements="requirements.txt"
         )
 
         shutil.rmtree(MODEL_DIR)
