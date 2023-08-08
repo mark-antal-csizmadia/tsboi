@@ -83,7 +83,7 @@ def main() \
 
     run_params = \
         {
-            'n_epochs': 2,
+            'n_epochs': 4,
         }
 
     series_dict = \
