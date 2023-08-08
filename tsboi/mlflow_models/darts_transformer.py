@@ -16,13 +16,11 @@ class MLflowDartsTransformerModel(mlflow.pyfunc.PythonModel):
         import yaml
         from darts.models import TransformerModel
         from darts.dataprocessing.pipeline import Pipeline
+        from torch.cuda import is_available as torch_cuda_is_available
+        from torch.backends.mps import is_available as torch_mps_is_available
 
         self.path_to_model: str = context.artifacts["path_to_model_file"]
-        self.path_to_model: Path = Path(self.path_to_model)
-        print("self.path_to_model")
-        print(self.path_to_model)
-        print("self.path_to_model.name")
-        print(self.path_to_model.name)
+        logging.info("Loading model from: {}".format(self.path_to_model))
 
         self.path_to_model_info_file: str = context.artifacts["path_to_model_info_file"]
         self.path_to_model_info_file: Path = Path(self.path_to_model_info_file)
@@ -42,8 +40,13 @@ class MLflowDartsTransformerModel(mlflow.pyfunc.PythonModel):
         self.pipeline_past_covariates: Optional[Pipeline] = \
             joblib.load(self.path_to_pipeline_past_covariates) if self.path_to_pipeline_past_covariates else None
 
-        self.model: TransformerModel = \
-            TransformerModel.load_from_checkpoint(model_name=self.path_to_model.name, best=True)
+        try:
+            self.model: TransformerModel = TransformerModel.load(path=self.path_to_model)
+            logging.info("Loaded model to GPU.")
+        except RuntimeError as e:
+            self.model: TransformerModel = TransformerModel.load(path=self.path_to_model, map_location="cpu")
+            self.model.to_cpu()
+            logging.info("Failed to load model to GPU, loaded model to CPU (reason: {}).".format(e))
 
         with open(self.path_to_model_info_file, "r") as stream:
             try:
@@ -58,10 +61,8 @@ class MLflowDartsTransformerModel(mlflow.pyfunc.PythonModel):
             logging.warning("num_samples is 1 when transformer model is used.")
             self.num_samples = 1
 
-        print("self.pipeline_target")
-        print(self.pipeline_target)
-        print("self.pipeline_past_covariates")
-        print(self.pipeline_past_covariates)
+        logging.info("Loaded pipeline_target: {}".format(self.pipeline_target))
+        logging.info("Loaded pipeline_past_covariates: {}".format(self.pipeline_past_covariates))
 
     def format_inputs(
             self,

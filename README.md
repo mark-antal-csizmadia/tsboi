@@ -141,11 +141,24 @@ python examples/inference_model.py --n_timesteps 100 --lag_past_covariates 60
 
 ### Deployment
 
+The models can be deployed as REST API via docker. The docker image can be generated either via implicit or explicit Dockerfile. See the REST API documentation [here](https://mlflow.org/docs/latest/models.html#id66).
+
+#### Compact via implicit Dockerfile
+
+Generate docker image, for instance, for a model run with run_id `runs:/04e248c6acca40bf815203c2ef71dd9e/ohlcv-transformer-20230808152504`:
+```bash
+mlflow models build-docker --model-uri "runs:/04e248c6acca40bf815203c2ef71dd9e/ohlcv-transformer-20230808152504" --name ohlcv_transformer
+docker run -p 5001:8080 ohlcv_transformer
+```
+The Mlflow server can be accessed at `http://localhost:5001/`.
+
+#### Complex via explicit Dockerfile
+
 Generate docker file and build image, for instance, for registered model `ohlcv_xgb_5` in Production stage:
 ```bash
-mlflow models generate-dockerfile --model-uri "models:/ohlcv_xgb_5/Production" -d ohlcv_xgb_5
-cd ohlcv_xgb_5
-docker buildx build --platform linux/amd64 --rm -f Dockerfile -t ohlcv_xgb_5 .
-docker run -p 5001:8080 ohlcv_xgb_5
+mlflow models generate-dockerfile --model-uri "models:/ohlcv_xgb/Production" -d ohlcv_xgb
+cd ohlcv_xgb
+docker buildx build --platform linux/amd64 --rm -f Dockerfile -t ohlcv_xgb .
+docker run -p 5001:8080 ohlcv_xgb
 ```
-The Mlflow server can be accessed at `http://localhost:5001/`.  See the REST API documentation [here](https://mlflow.org/docs/latest/models.html#id66).
+The Mlflow server can be accessed at `http://localhost:5001/`.

@@ -22,6 +22,8 @@ from tsboi.data.base_dataset import BaseDataset
 MODEL_NAME = 'ohlcv-transformer-{}'.format(datetime.now().strftime('%Y%m%d%H%M%S'))
 MODEL_DIR = Path('models') / MODEL_NAME
 MODEL_DIR.mkdir(parents=True, exist_ok=True)
+MODEL_PATH = MODEL_DIR / 'model.pth.tar'
+MODEL_CKPT_PATH = MODEL_DIR / 'model.pth.tar.ckpt'
 TARGET_PIPELINE_PATH = MODEL_DIR / 'pipeline_target.pkl'
 PAST_COVARIATES_PIPELINE_PATH = MODEL_DIR / 'past_covariates_pipeline.pkl'
 MODEL_INFO_PATH = MODEL_DIR / 'model_info.json'
@@ -83,7 +85,7 @@ def main() \
 
     run_params = \
         {
-            'n_epochs': 4,
+            'n_epochs': 1,#4
         }
 
     series_dict = \
@@ -98,7 +100,7 @@ def main() \
             'covariates_train': covariates_train_val_preprocessed,
             'covariates_val': covariates_train_val_preprocessed
         }
-    lags_dict = {"lags": 60}
+    lags_dict = {"lags": 10}
 
     with mlflow.start_run(run_name=f"{MODEL_NAME}-fit") as run:
         mlflow.log_input(dataset=mlflow_dataset, context="training")
@@ -129,6 +131,7 @@ def main() \
         plt.legend()
         plt.show()
         # END TODO
+        model.save(str(MODEL_PATH))
 
         model_info = {
             "target_id": target_id,
@@ -144,7 +147,8 @@ def main() \
             json.dump(model_info, f)
 
         artifacts = {
-            "path_to_model_file": str(Path("darts_logs") / MODEL_NAME),
+            "path_to_model_file": str(MODEL_PATH),
+            "path_to_model_file_ckpt": str(MODEL_CKPT_PATH),
             "path_to_model_info_file": str(MODEL_INFO_PATH),
             "path_to_pipeline_target_file": str(TARGET_PIPELINE_PATH),
             "path_to_pipeline_past_covariates_file": str(PAST_COVARIATES_PIPELINE_PATH),
