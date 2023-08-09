@@ -1,0 +1,5 @@
+FROM python:3.9.17-bookworm
+
+WORKDIR /mlflow/
+
+RUN pip3 install mlflow==2.5.0 psycopg2-binary

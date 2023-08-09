@@ -59,6 +59,8 @@ class BaseDataset:
             logger.info(f"Loading %s files from %s, %s, and %s", len(paths),
                         self.train_dir, self.val_dir, self.test_dir)
 
+        # TODO: remove this
+        paths = paths[:10]
         dfs = [pd.read_csv(path, parse_dates=[BaseDataset.TIMESTAMP_COLUMN_NAME]) for path in paths]
         df = pd.concat(dfs, axis=0)
         logger.info(f"Loaded %s rows", df.shape[0])
