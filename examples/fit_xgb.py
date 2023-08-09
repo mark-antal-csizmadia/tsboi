@@ -59,10 +59,11 @@ def main() \
     series_test, covariates_test = \
         dataset.load_dataset(subset='test', record_description=True, record_examples_df_n_timesteps=100)
 
-    series_train_val = series_train.concatenate(series_val, axis=0)
-    covariates_train_val = covariates_train.concatenate(covariates_val, axis=0)
-    series = series_train_val.concatenate(series_test, axis=0)
-    covariates = covariates_train_val.concatenate(covariates_test, axis=0)
+    # TODO: remove ignore_time_axis=True
+    series_train_val = series_train.concatenate(series_val, axis=0, ignore_time_axis=True)
+    covariates_train_val = covariates_train.concatenate(covariates_val, axis=0, ignore_time_axis=True)
+    series = series_train_val.concatenate(series_test, axis=0, ignore_time_axis=True)
+    covariates = covariates_train_val.concatenate(covariates_test, axis=0, ignore_time_axis=True)
 
     mlflow_dataset: PandasDataset = \
         mlflow.data.from_pandas(df=dataset.examples_df, source='/tmp/dvcstore/', digest=args.dataset_digest)
@@ -171,7 +172,8 @@ def main() \
             pip_requirements="requirements.txt"
         )
 
-        shutil.rmtree(MODEL_DIR)
+        # TODO: uncomment this
+        # shutil.rmtree(MODEL_DIR)
 
 
 if __name__ == '__main__':
