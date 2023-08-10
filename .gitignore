@@ -159,3 +159,12 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 .idea/
 /data
+
+models
+!models/placeholder
+optuna_studies
+!optuna_studies/placeholder
+mlruns
+!mlruns/placeholder
+mlrun_data
+!mlrun_data/placeholder

@@ -194,8 +194,7 @@ def main() \
             pip_requirements="requirements.txt"
         )
 
-        # TODO: uncomment this
-        # shutil.rmtree(MODEL_DIR)
+        shutil.rmtree(MODEL_DIR)
 
 
 if __name__ == '__main__':
