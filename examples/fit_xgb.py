@@ -1,6 +1,7 @@
 import shutil
 import logging
 import json
+import joblib
 import os
 import argparse
 from datetime import datetime
@@ -18,15 +19,20 @@ from tsboi.trainers.xgb_train import xgb_train_function
 from tsboi.mlflow_models.darts_xgb import MLflowDartsXGBModel
 from tsboi.data.base_dataset import BaseDataset
 
-MODEL_NAME = 'ohlcv-xgb-{}'.format(datetime.now().strftime('%Y%m%d%H%M%S'))
+MODEL_BASE_NAME = "ohlcv-xgb"
+MODEL_NAME = '{}-{}'.format(MODEL_BASE_NAME, datetime.now().strftime('%Y%m%d%H%M%S'))
 MODEL_DIR = Path('models') / MODEL_NAME
 MODEL_DIR.mkdir(parents=True, exist_ok=True)
 MODEL_PATH = MODEL_DIR / 'model.pkl'
 MODEL_INFO_PATH = MODEL_DIR / 'model_info.json'
 DATA_DIR = Path('data/split')
+OPTUNA_DIR = Path('optuna_studies')
+OPTUNA_DIR.mkdir(parents=True, exist_ok=True)
 
 load_dotenv(find_dotenv())
 MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI")
+DATASET_DIGEST = os.getenv("DATASET_DIGEST")
+DATASET_DIGEST = DATASET_DIGEST[:8]
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -36,7 +42,8 @@ def get_parser() \
         -> argparse.ArgumentParser:
 
     parser = argparse.ArgumentParser(description='Arguments for cleaning OHLCV data for model training.')
-    parser.add_argument('--dataset_digest', help='Latest commit when data.dvc was updated', type=str, required=True)
+    parser.add_argument('--study_name', help='Name of the study to get the hyperparameters from. ', type=str,
+                        required=False)
     parser.add_argument('--random_state', help='Random state for reproducibility', type=int, default=42)
 
     return parser
@@ -67,18 +74,32 @@ def main() \
     covariates = covariates_train_val.concatenate(covariates_test, axis=0)
 
     mlflow_dataset: PandasDataset = \
-        mlflow.data.from_pandas(df=dataset.examples_df, source='/tmp/dvcstore/', digest=args.dataset_digest)
+        mlflow.data.from_pandas(df=dataset.examples_df, source='/tmp/dvcstore/', digest=DATASET_DIGEST)
 
     logger.info(f"Dataset description:")
     logger.info(f"{dataset.description}")
 
-    run_params = \
-        {
-            'learning_rate': 0.1,
-            'max_depth': 6,
-            'n_estimators': 3,#200,
-            'reg_alpha': 0.1,
-        }
+    if args.study_name:
+        study = joblib.load(OPTUNA_DIR / f"{study_name}.pkl")
+        logger.info('Fitting model with best trial hyperparameters (score {}, params {})'.format(
+            study.best_trial.value, study.best_trial.params))
+        run_params = study.best_trial.params
+    else:
+        run_params = \
+            {
+                'learning_rate': 0.1,
+                'max_depth': 6,
+                'n_estimators': 200,
+                'reg_alpha': 0.1,
+            }
+        logger.info('Fitting model with default hyperparameters (params {})'.format(run_params))
+
+    mlflow_experiment = client.get_experiment_by_name(name=MODEL_BASE_NAME)
+    if mlflow_experiment:
+        mlflow_experiment_id = mlflow_experiment.experiment_id
+    else:
+        mlflow_experiment_id = client.create_experiment(name=MODEL_BASE_NAME)
+        client.set_experiment_tag(experiment_id=mlflow_experiment_id, key="dataset_digest", value=DATASET_DIGEST)
 
     series_dict = \
         {
@@ -92,23 +113,12 @@ def main() \
             'covariates_train': covariates_train_val,
             'covariates_val': covariates_train_val
         }
-    lags_dict = {"lags_past_covariates": 60}
+    lags_dict = {"lags_past_covariates": 10}
     probabilistic_dict = {}
 
-    # mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
     logger.info(f"MLflow tracking uri: {MLFLOW_TRACKING_URI}")
 
-    mlflow_experiment_id = client.create_experiment(MODEL_NAME)
-    logger.info(f"MLflow experiment id: {mlflow_experiment_id}")
-
-    client.set_experiment_tag(experiment_id=mlflow_experiment_id, key="dataset_digest", value=args.dataset_digest)
-
-    experiment = client.get_experiment(mlflow_experiment_id)
-    logger.info("Artifact Location: {}".format(experiment.artifact_location))
-
-    run_object = client.create_run(experiment_id=mlflow_experiment_id, tags={"mlflow.runName": f"{MODEL_NAME}-fit"})
-
-    with mlflow.start_run(run_id=run_object.info.run_id) as run:
+    with mlflow.start_run(experiment_id=mlflow_experiment_id, run_name=f"{MODEL_NAME}-fit") as run:
         mlflow.log_input(dataset=mlflow_dataset, context="training")
         mlflow.log_params(run_params)
 
@@ -190,5 +200,6 @@ def main() \
 
 if __name__ == '__main__':
     args = get_parser().parse_args()
+    study_name = args.study_name
     random_state = args.random_state
     main()
