@@ -100,6 +100,7 @@ services:
           cpus: '4.00'
           memory: 4000M
     command: python3 examples/fit_xgb.py --study_name cool_neurai_study --random_state 42
+    # command: python3 examples/fit_xgb.py --random_state 42
     links:
       - "mlflow-server:mlflow-server"
 
@@ -136,8 +137,7 @@ services:
         reservations:
           cpus: '4.00'
           memory: 4000M
-    # command: python3 examples/hp_search_xgb.py --n_trials 2 --study_name cool_neurai_study --random_state 42
-    command: python3 examples/hp_search_xgb.py --n_trials 2 --random_state 42
+    command: python3 examples/hp_search_xgb.py --n_trials 2 --study_name cool_neurai_study --random_state 42
     links:
       - "mlflow-server:mlflow-server"
 

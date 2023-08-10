@@ -138,7 +138,7 @@ python examples/split_data.py --data_dir_cleaned "data/cleaned" --data_dir_split
 ##### XGBoost
 
 ```bash
-python examples/fit_xgb.py --study_name "my_study" --random_state=42
+python examples/fit_xgb.py [--study_name "my_study"] --random_state=42
 ```
 where `study_name` is the name of the Optuna study to get best hyperparameters of (optional), and `random_state` is the random state for the hyperparameter tuning.
 
