@@ -10,6 +10,7 @@ import mlflow
 from mlflow.models import ModelSignature
 from mlflow.types.schema import Schema, ColSpec
 from mlflow.data.pandas_dataset import PandasDataset
+from mlflow import MlflowClient
 from darts.metrics import rmse
 from dotenv import load_dotenv, find_dotenv
 
@@ -43,6 +44,7 @@ def get_parser() \
 
 def main() \
         -> None:
+    client = MlflowClient(tracking_uri=MLFLOW_TRACKING_URI)
 
     target_id = 'close'
     covariate_ids = ['open', 'high', 'low']
@@ -94,9 +96,20 @@ def main() \
     lags_dict = {"lags_past_covariates": 60}
     probabilistic_dict = {}
 
-    mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
+    # mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
+    logger.info(f"MLflow tracking uri: {MLFLOW_TRACKING_URI}")
 
-    with mlflow.start_run(run_name=f"{MODEL_NAME}-fit") as run:
+    mlflow_experiment_id = client.create_experiment(MODEL_NAME)
+    logger.info(f"MLflow experiment id: {mlflow_experiment_id}")
+
+    client.set_experiment_tag(experiment_id=mlflow_experiment_id, key="dataset_digest", value=args.dataset_digest)
+
+    experiment = client.get_experiment(mlflow_experiment_id)
+    logger.info("Artifact Location: {}".format(experiment.artifact_location))
+
+    run_object = client.create_run(experiment_id=mlflow_experiment_id, tags={"mlflow.runName": f"{MODEL_NAME}-fit"})
+
+    with mlflow.start_run(run_id=run_object.info.run_id) as run:
         mlflow.log_input(dataset=mlflow_dataset, context="training")
         mlflow.log_params(run_params)
 

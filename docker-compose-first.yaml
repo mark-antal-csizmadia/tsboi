@@ -1,4 +1,5 @@
 version: '1'
+# partly based on: https://github.com/aganse/docker_mlflow_db/tree/master
 
 services:
   db:
@@ -24,29 +25,30 @@ services:
     image: mlflow_server
     container_name: mlflow_server
     expose:
-      - 5050
+      - 5000
     networks:
       - frontend
       - backend
     environment:
       - BACKEND=postgresql://${PG_USER}:${PG_PASSWORD}@db:${DB_PORT:-5432}/${PG_DATABASE}
-      - ARTIFACTS=/app/mlruns
+      - ARTIFACTS=/mlruns
       # For artifact store in AWS S3 (note boto was installed in container):
       #  - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       #  - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
       #  - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
       #  - ARTIFACTS="s3://mlflow_bucket/my_mlflow_dir/"
     volumes:
-      - mlrun_data:/mlruns
-      - condenv:/opt/conda
+      - type: bind
+        source: mlrun_data
+        target: /mlruns
     command:
       - sh
       - -c
       - mlflow server
-        --port 5050
+        --port 5000
         --host 0.0.0.0
         --backend-store-uri $${BACKEND}
-        --default-artifact-root $${ARTIFACTS}
+        --artifacts-destination $${ARTIFACTS}
     depends_on:
       - db
 
@@ -75,7 +77,7 @@ services:
       - mlflow-server
       - nginx
     environment:
-      MLFLOW_TRACKING_URI: http://mlflow-server:5050
+      MLFLOW_TRACKING_URI: http://mlflow-server:5000
     networks:
       - backend
     volumes:
@@ -85,9 +87,6 @@ services:
       - type: bind
         source: ./models
         target: /app/models
-      - type: bind
-        source: mlrun_data
-        target: /app/mlruns
     deploy:
       resources:
         limits:
