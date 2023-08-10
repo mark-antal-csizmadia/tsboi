@@ -1,6 +1,7 @@
 import shutil
 import logging
 import json
+import os
 import argparse
 from datetime import datetime
 from pathlib import Path
@@ -9,7 +10,9 @@ import mlflow
 from mlflow.models import ModelSignature
 from mlflow.types.schema import Schema, ColSpec
 from mlflow.data.pandas_dataset import PandasDataset
+from mlflow import MlflowClient
 from darts.metrics import rmse
+from dotenv import load_dotenv, find_dotenv
 
 from tsboi.trainers.xgb_train import xgb_train_function
 from tsboi.mlflow_models.darts_xgb import MLflowDartsXGBModel
@@ -21,6 +24,9 @@ MODEL_DIR.mkdir(parents=True, exist_ok=True)
 MODEL_PATH = MODEL_DIR / 'model.pkl'
 MODEL_INFO_PATH = MODEL_DIR / 'model_info.json'
 DATA_DIR = Path('data/split')
+
+load_dotenv(find_dotenv())
+MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI")
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -38,6 +44,7 @@ def get_parser() \
 
 def main() \
         -> None:
+    client = MlflowClient(tracking_uri=MLFLOW_TRACKING_URI)
 
     target_id = 'close'
     covariate_ids = ['open', 'high', 'low']
@@ -69,7 +76,7 @@ def main() \
         {
             'learning_rate': 0.1,
             'max_depth': 6,
-            'n_estimators': 200,
+            'n_estimators': 3,#200,
             'reg_alpha': 0.1,
         }
 
@@ -88,7 +95,20 @@ def main() \
     lags_dict = {"lags_past_covariates": 60}
     probabilistic_dict = {}
 
-    with mlflow.start_run(run_name=f"{MODEL_NAME}-fit") as run:
+    # mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
+    logger.info(f"MLflow tracking uri: {MLFLOW_TRACKING_URI}")
+
+    mlflow_experiment_id = client.create_experiment(MODEL_NAME)
+    logger.info(f"MLflow experiment id: {mlflow_experiment_id}")
+
+    client.set_experiment_tag(experiment_id=mlflow_experiment_id, key="dataset_digest", value=args.dataset_digest)
+
+    experiment = client.get_experiment(mlflow_experiment_id)
+    logger.info("Artifact Location: {}".format(experiment.artifact_location))
+
+    run_object = client.create_run(experiment_id=mlflow_experiment_id, tags={"mlflow.runName": f"{MODEL_NAME}-fit"})
+
+    with mlflow.start_run(run_id=run_object.info.run_id) as run:
         mlflow.log_input(dataset=mlflow_dataset, context="training")
         mlflow.log_params(run_params)
 
@@ -164,7 +184,8 @@ def main() \
             pip_requirements="requirements.txt"
         )
 
-        shutil.rmtree(MODEL_DIR)
+        # TODO: uncomment this
+        # shutil.rmtree(MODEL_DIR)
 
 
 if __name__ == '__main__':
