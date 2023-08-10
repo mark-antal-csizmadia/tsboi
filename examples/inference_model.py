@@ -23,6 +23,7 @@ def get_parser() \
 
     return parser
 
+
 def get_df():
     paths = sorted(glob(str(DATA_DIR / '*.csv')))
     logger.info("Loading %s files from %s", len(paths), DATA_DIR)

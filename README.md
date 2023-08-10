@@ -2,6 +2,23 @@
 
 **t**ime-**s**eries **boi** is a crypto exchange price forecasting package, designed as a ML platform proof-of-concept for the NeurAI project. **tsboi** uses [cctx](https://github.com/ccxt/ccxt) to fetching crypto exchange data, [Darts](https://github.com/unit8co/darts) to train model, [hyperopt](https://github.com/hyperopt/hyperopt) to execute hyperparameter searches, [DVC](https://github.com/iterative/dvc) to version control data, and [MLflow](https://github.com/mlflow/mlflow) to do MLOps (model versioning, deployment, monitoring). 
 
+## Run stuff with `docker-compose`
+
+Run tests:
+```bash
+docker-compose -f docker-compose-first.yaml up -d --build tests
+```
+
+Train an XGB model:
+```bash
+docker-compose -f docker-compose-first.yaml up -d --build fit_xgb
+```
+
+Do hyperparameter tuning for an XGB model:
+```bash
+docker-compose -f docker-compose-first.yaml up -d --build search_and_refit_xgb_optuna
+```
+
 ## Contributing
 
 ### Install DVC
