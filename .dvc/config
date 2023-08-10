@@ -1,4 +1,5 @@
 [core]
     remote = myremote
 ['remote "myremote"']
-    url = /tmp/dvcstore
+    url = gdrive://1pIkccRFKlKB7YUTlds7hj9c-CsCrpOOB
+    gdrive_acknowledge_abuse = true
