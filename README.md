@@ -16,7 +16,7 @@ docker-compose -f docker-compose-first.yaml up -d --build fit_xgb
 
 Do hyperparameter tuning for an XGB model:
 ```bash
-docker-compose -f docker-compose-first.yaml up -d --build search_and_refit_xgb_optuna
+docker-compose -f docker-compose-first.yaml up -d --build hp_search_xgb
 ```
 
 ## Contributing
@@ -75,6 +75,24 @@ python -m pytest -s
 
 ## Workflows
 
+### Environment variables
+
+Example:
+```bash
+PG_DATABASE=btcusddb
+PG_USER=testuser
+PG_PASSWORD=qwerty
+MLFLOW_TRACKING_URI=http://localhost:5090
+DATASET_DIGEST=9c3bf8a86cf74d9f84fd38d86087314e70766a95
+```
+
+where `DATASET_DIGEST` is the digest of the dataset, that is, the last commit when `data.dvc` was changed. May be obtained by:
+```bash
+git log -n 1 --pretty=format:%H -- data.dvc
+```
+
+
+
 ### Preparing data
 
 #### Fetch OHLCV data and insert into database table
@@ -120,12 +138,9 @@ python examples/split_data.py --data_dir_cleaned "data/cleaned" --data_dir_split
 ##### XGBoost
 
 ```bash
-python examples/fit_xgb.py --dataset_digest=9c3bf8a86cf74d9f84fd38d86087314e70766a95 --random_state=42
+python examples/fit_xgb.py --study_name "my_study" --random_state=42
 ```
-where `dataset_digest` is the digest of the dataset (the latest commit hash when the dataset was changed), obtained by running
-```bash
-git log -n 1 --pretty=format:%H -- data.dvc
-```
+where `study_name` is the name of the Optuna study to get best hyperparameters of (optional), and `random_state` is the random state for the hyperparameter tuning.
 
 ##### Transformer
 
@@ -139,9 +154,12 @@ git log -n 1 --pretty=format:%H -- data.dvc
 
 #### Hyperparameter tuning and best model refit
 
+Hyperparameter tuning is done via Optuna, and the best model is to be refit with the simple fit script, using the `--study_name` command line argument.
+
 ```bash
-python tsboi/hp_search_with_refit_ohlcv_xgb.py
+python tsboi/hp_search_xgb.py --study_name "my_study" --n_trials 3 --random_state 42 
 ```
+where `study_name` is the name of the Optuna study, `n_trials` is the number of trials to run, and `random_state` is the random state for the hyperparameter tuning.
 
 
 #### Inference with model

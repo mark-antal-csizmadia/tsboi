@@ -46,7 +46,7 @@ def transformer_train_function(
         save_checkpoints=True,
         force_reset=True,
         optimizer_cls=torch.optim.AdamW,
-        optimizer_kwargs={"lr": 1e-3},
+        optimizer_kwargs={"lr": 1e-2},
         pl_trainer_kwargs={"accelerator": "auto", "devices": "auto"}
     )
 

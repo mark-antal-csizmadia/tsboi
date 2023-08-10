@@ -89,7 +89,7 @@ def main() \
             {
                 'learning_rate': 0.1,
                 'max_depth': 6,
-                'n_estimators': 200,
+                'n_estimators': 10,
                 'reg_alpha': 0.1,
             }
         logger.info('Fitting model with default hyperparameters (params {})'.format(run_params))

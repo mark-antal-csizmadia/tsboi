@@ -37,7 +37,6 @@ def get_parser() \
         -> argparse.ArgumentParser:
 
     parser = argparse.ArgumentParser(description='Arguments for cleaning OHLCV data for model training.')
-    parser.add_argument('--dataset_digest', help='Latest commit when data.dvc was updated', type=str, required=True)
     parser.add_argument('--random_state', help='Random state for reproducibility', type=int, default=42)
 
     return parser
@@ -67,7 +66,7 @@ def main() \
     covariates = covariates_train_val.concatenate(covariates_test, axis=0)
 
     mlflow_dataset: PandasDataset = \
-        mlflow.data.from_pandas(df=dataset.examples_df, source='/tmp/dvcstore/', digest=args.dataset_digest)
+        mlflow.data.from_pandas(df=dataset.examples_df, source='/tmp/dvcstore/', digest="123")
 
     logger.info(f"Dataset description:")
     logger.info(f"{dataset.description}")
@@ -85,7 +84,7 @@ def main() \
 
     run_params = \
         {
-            'n_epochs': 1,#4
+            'n_epochs': 4,
         }
 
     series_dict = \
@@ -102,7 +101,8 @@ def main() \
         }
     lags_dict = {"lags": 10}
 
-    with mlflow.start_run(run_name=f"{MODEL_NAME}-fit") as run:
+    experiment_id = mlflow.create_experiment(MODEL_NAME)
+    with mlflow.start_run(experiment_id=experiment_id, run_name=f"{MODEL_NAME}-fit") as run:
         mlflow.log_input(dataset=mlflow_dataset, context="training")
         mlflow.log_params(run_params)
 
