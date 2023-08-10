@@ -1,23 +1,144 @@
 version: '1'
+# partly based on: https://github.com/aganse/docker_mlflow_db/tree/master
 
 services:
-  postgres:
-    container_name: postgres
+  db:
+    restart: always
     image: postgres:latest
-    profiles: ["tests", "from_fetch_to_train"]
-    healthcheck:
-      test: /usr/bin/pg_isready
-      interval: 5s
-      timeout: 10s
-      retries: 120
+    container_name: db
+    expose:
+        - ${DB_PORT:-5432}
+    networks:
+        - backend
     environment:
-      POSTGRES_USER: testuser
-      POSTGRES_PASSWORD: qwerty
-      POSTGRES_DB: btcusddb
+        - POSTGRES_DB=${PG_DATABASE}
+        - POSTGRES_USER=${PG_USER}
+        - POSTGRES_PASSWORD=${PG_PASSWORD}
     volumes:
-      - postgres-db:/data/btcusddb
+        - db_datapg:/var/lib/postgresql/data
+
+  mlflow-server:
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile-mlflow-server
+    image: mlflow_server
+    container_name: mlflow_server
+    expose:
+      - 5000
+    networks:
+      - frontend
+      - backend
+    environment:
+      - BACKEND=postgresql://${PG_USER}:${PG_PASSWORD}@db:${DB_PORT:-5432}/${PG_DATABASE}
+      - ARTIFACTS=/mlruns
+      # For artifact store in AWS S3 (note boto was installed in container):
+      #  - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      #  - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      #  - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
+      #  - ARTIFACTS="s3://mlflow_bucket/my_mlflow_dir/"
+    volumes:
+      - type: bind
+        source: mlrun_data
+        target: /mlruns
+    command:
+      - sh
+      - -c
+      - mlflow server
+        --port 5000
+        --host 0.0.0.0
+        --backend-store-uri $${BACKEND}
+        --artifacts-destination $${ARTIFACTS}
+    depends_on:
+      - db
+
+  nginx:
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile-nginx
+    image: mlflow_nginx
+    container_name: mlflow_nginx
     ports:
-      - "5432:5432"
+      - "${MLFLOW_PORT:-5000}:80"
+    networks:
+      - frontend
+    depends_on:
+      - mlflow-server
+
+  fit_xgb:
+    container_name: fit_xgb
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: tsboi
+    depends_on:
+      - db
+      - mlflow-server
+      - nginx
+    environment:
+      MLFLOW_TRACKING_URI: http://mlflow-server:5000
+      DATASET_DIGEST: 9c3bf8a86cf74d9f84fd38d86087314e70766a95
+    networks:
+      - backend
+    volumes:
+      - type: bind
+        source: ./data
+        target: /app/data
+      - type: bind
+        source: ./models
+        target: /app/models
+      - type: bind
+        source: ./optuna_studies
+        target: /app/optuna_studies
+    deploy:
+      resources:
+        limits:
+          cpus: '6.00'
+          memory: 8000M
+        reservations:
+          cpus: '4.00'
+          memory: 4000M
+    command: python3 examples/fit_xgb.py --study_name cool_neurai_study --random_state 42
+    links:
+      - "mlflow-server:mlflow-server"
+
+  search_and_refit_xgb_optuna:
+    container_name: search_and_refit_xgb_optuna
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: tsboi
+    depends_on:
+      - db
+      - mlflow-server
+      - nginx
+    environment:
+      MLFLOW_TRACKING_URI: http://mlflow-server:5000
+      DATASET_DIGEST: 9c3bf8a86cf74d9f84fd38d86087314e70766a95
+    networks:
+      - backend
+    volumes:
+      - type: bind
+        source: ./data
+        target: /app/data
+      - type: bind
+        source: ./models
+        target: /app/models
+      - type: bind
+        source: ./optuna_studies
+        target: /app/optuna_studies
+    deploy:
+      resources:
+        limits:
+          cpus: '6.00'
+          memory: 8000M
+        reservations:
+          cpus: '4.00'
+          memory: 4000M
+    command: python3 examples/search_and_refit_xgb_optuna.py --n_trials 2 --study_name cool_neurai_study --random_state 42
+    links:
+      - "mlflow-server:mlflow-server"
 
   tests:
     container_name: tests
@@ -25,33 +146,25 @@ services:
       context: .
       dockerfile: Dockerfile
     image: tsboi
-    profiles: ["tests"]
     depends_on:
-      postgres:
-        condition: service_healthy
+      - db
     command: python3 -m pytest -s --postgres_host=postgres
-    environment:
-      PG_DATABASE: btcusddb
-      PG_USER: testuser
-      PG_PASSWORD: qwerty
+    networks:
+      - backend
+    links:
+      - "db:postgres"
 
-  fetch_data:
-    container_name: fetch_data
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: tsboi
-    profiles: ["from_fetch_to_train"]
-    depends_on:
-      postgres:
-        condition: service_healthy
-    command: python3 examples/fetch_data.py --table_name "btc_usd_ohlcv_data_1m" --symbol "BTC/USD" --exchange_name "binance" --end_timestamp "2023-07-01T00:00:00Z" --periodicity "1m" --chunk_size 720 --postgres_host postgres
-    environment:
-      PG_DATABASE: btcusddb
-      PG_USER: testuser
-      PG_PASSWORD: qwerty
 
+networks:
+    backend:
+        driver: bridge
+    frontend:
+        driver: bridge
 
 volumes:
-  postgres-db:
-    driver: local
+    db_datapg:
+    mlrun_data:
+    condenv:
+    data:
+    models:
+    optuna_studies:

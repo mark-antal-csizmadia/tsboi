@@ -2,7 +2,7 @@ import pytest
 
 from tsboi.data.pg_controller import PostgresController
 from tsboi.data.cctx_fetcher import CCTXFetcher
-from settings import PG_DATABASE, PG_USER, PG_PASSWORD
+from .settings import PG_DATABASE, PG_USER, PG_PASSWORD
 
 
 def pytest_addoption(parser):

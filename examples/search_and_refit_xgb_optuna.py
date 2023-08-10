@@ -1,32 +1,29 @@
-import sys
+import os
 import logging
-import shutil
-from datetime import datetime
 import argparse
-from typing import Any, Callable, Dict, Optional, Tuple
+from typing import Any, Dict, Optional
 from pathlib import Path
-import json
-import matplotlib.pyplot as plt
+import joblib
+import pickle
 from darts import TimeSeries
 from darts.metrics import rmse
-import mlflow
-from mlflow.models import ModelSignature
-from mlflow.types.schema import Schema, ColSpec
+from mlflow import MlflowClient
 import optuna
 from optuna.integration.mlflow import MLflowCallback
+from dotenv import load_dotenv, find_dotenv
 
 
 from tsboi.trainers.xgb_train import xgb_train_function
-from tsboi.mlflow_models.darts_xgb import MLflowDartsXGBModel
 from tsboi.data.base_dataset import BaseDataset
 
-
-MODEL_NAME = 'ohlcv-xgb-{}'.format(datetime.now().strftime('%Y%m%d%H%M%S'))
-MODEL_DIR = Path('models') / MODEL_NAME
-MODEL_PATH = MODEL_DIR / 'model.pkl'
-MODEL_INFO_PATH = MODEL_DIR / 'model_info.json'
-MODEL_DIR.mkdir(parents=True, exist_ok=True)
 DATA_DIR = Path('data/split')
+OPTUNA_DIR = Path('optuna_studies')
+OPTUNA_DIR.mkdir(parents=True, exist_ok=True)
+
+load_dotenv(find_dotenv())
+MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI")
+DATASET_DIGEST = os.getenv("DATASET_DIGEST")
+DATASET_DIGEST = DATASET_DIGEST[:8]
 
 
 logging.basicConfig(level=logging.INFO)
@@ -37,8 +34,8 @@ def get_parser() \
         -> argparse.ArgumentParser:
 
     parser = argparse.ArgumentParser(description='Arguments for hyperparameter search.')
+    parser.add_argument('--study_name', help='Name of the study', type=str, required=True)
     parser.add_argument('--n_trials', help='Number of trials', type=int, default=10)
-    parser.add_argument('--dataset_digest', help='Latest commit when data.dvc was updated', type=str, required=True)
     parser.add_argument('--random_state', help='Random state for reproducibility', type=int, default=42)
 
     return parser
@@ -53,9 +50,9 @@ def objective(
         random_state: Optional[int] = None) \
         -> float:
 
-    learning_rate = 1.2
-    max_depth = trial.suggest_int('max_depth', 3, 9)
-    reg_alpha = trial.suggest_float('reg_alpha', 1e-4, 1e-1, log=True)
+    learning_rate = trial.suggest_float('learning_rate', 0.1, 0.2, log=True)
+    max_depth = trial.suggest_int('max_depth', 4, 8)
+    reg_alpha = trial.suggest_float('reg_alpha', 1e-2, 1e-1, log=True)
     n_estimators = trial.suggest_int('n_estimators', 100, 1000)
     params = {
         'learning_rate': learning_rate,
@@ -83,6 +80,8 @@ def objective(
 
 
 def main():
+    client = MlflowClient(tracking_uri=MLFLOW_TRACKING_URI)
+
     target_id = 'close'
     covariate_ids = ['open', 'high', 'low']
 
@@ -103,6 +102,35 @@ def main():
     series = series_train_val.concatenate(series_test, axis=0)
     covariates = covariates_train_val.concatenate(covariates_test, axis=0)
 
+    # mlflow_dataset = mlflow.data.from_pandas(df=dataset.examples_df, source='/tmp/dvcstore/', digest=DATASET_DIGEST)
+
+    logger.info(f"Dataset description:")
+    logger.info(f"{dataset.description}")
+
+    if OPTUNA_DIR / f"{study_name}.pkl" in OPTUNA_DIR.iterdir():
+        study = joblib.load(OPTUNA_DIR / f"{study_name}.pkl")
+        with open(OPTUNA_DIR / f"{study_name}_sampler.pkl", "rb") as fin:
+            study.sampler = pickle.load(fin)
+        logger.info('Loaded study {}'.format(study_name))
+        logger.info('Best trial: score {}, params {}'.format(study.best_trial.value, study.best_trial.params))
+        mlflow_experiment = client.get_experiment_by_name(name=study_name)
+        mlflow_experiment_id = mlflow_experiment.experiment_id
+        logger.info(f"MLflow experiment id: {mlflow_experiment_id}")
+    else:
+        study = optuna.create_study(study_name=study_name, direction='minimize')
+        logger.info('Created study {}'.format(study_name))
+
+        mlflow_experiment_id = client.create_experiment(name=study_name)
+        logger.info(f"MLflow experiment id: {mlflow_experiment_id}")
+        client.set_experiment_tag(experiment_id=mlflow_experiment_id, key="dataset_digest", value=DATASET_DIGEST)
+
+        experiment = client.get_experiment(mlflow_experiment_id)
+        logger.info("Artifact Location: {}".format(experiment.artifact_location))
+
+    # mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
+    logger.info(f"MLflow tracking uri: {MLFLOW_TRACKING_URI}")
+
+
     series_dict = \
         {
             'series_train': series_train,
@@ -119,11 +147,13 @@ def main():
     probabilistic_dict = {}
 
     mlflc = MLflowCallback(
-        tracking_uri='mlruns',
+        tracking_uri=MLFLOW_TRACKING_URI,
         metric_name="rmse_val",
+        mlflow_kwargs={
+            "experiment_id": mlflow_experiment_id,
+        }
     )
 
-    study = optuna.create_study(study_name=MODEL_NAME, direction='minimize')
     study.optimize(
         lambda trial: objective(
             trial,
@@ -140,11 +170,15 @@ def main():
     best_trial = study.best_trial
     logger.info('Best trial: score {}, params {}'.format(best_trial.value, best_trial.params))
 
+    joblib.dump(study, OPTUNA_DIR / f"{study_name}.pkl")
+    with open(OPTUNA_DIR / f"{study_name}_sampler.pkl", "wb") as fout:
+        pickle.dump(study.sampler, fout)
+
 
 if __name__ == '__main__':
     parser = get_parser()
     args = parser.parse_args()
+    study_name = args.study_name
     n_trials = args.n_trials
     random_state = args.random_state
-    dataset_digest = args.dataset_digest
     main()
