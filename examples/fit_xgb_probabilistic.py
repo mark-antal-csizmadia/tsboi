@@ -9,6 +9,8 @@ import mlflow
 from mlflow.models import ModelSignature
 from mlflow.types.schema import Schema, ColSpec
 from darts.metrics import rmse
+from mlflow.data.pandas_dataset import PandasDataset
+from dotenv import load_dotenv, find_dotenv
 
 # TODO: remove this when the code is packaged
 sys.path.insert(0, '../tsboi')
@@ -41,16 +43,22 @@ def main() \
         covariate_ids=covariate_ids,
         dtype='float32')
 
-    series, covariates = dataset.load_dataset(limit=60000, record_examples_df_n_timesteps=1000)
-    # series, covariates = dataset.load_dataset(limit=1510000, record_examples_df_n_timesteps=1000)
+    series_train, covariates_train = dataset.load_dataset(subset='train')
+    series_val, covariates_val = dataset.load_dataset(subset='val')
+    series_test, covariates_test = \
+        dataset.load_dataset(subset='test', record_description=True, record_examples_df_n_timesteps=100)
+
+    series_train_val = series_train.concatenate(series_val, axis=0)
+    covariates_train_val = covariates_train.concatenate(covariates_val, axis=0)
+    series = series_train_val.concatenate(series_test, axis=0)
+    covariates = covariates_train_val.concatenate(covariates_test, axis=0)
+
+    mlflow_dataset: PandasDataset = \
+        mlflow.data.from_pandas(df=dataset.examples_df, source='/tmp/dvcstore/', digest=DATASET_DIGEST)
 
     logger.info(f"Dataset description:")
     logger.info(f"{dataset.description}")
 
-    series_train_val, series_test = series.split_after(split_point=0.8)
-    covariates_train_val, covariates_test = covariates.split_after(split_point=0.8)
-    series_train, series_val = series_train_val.split_after(split_point=0.8)
-    covariates_train, covariates_val = covariates_train_val.split_after(split_point=0.8)
 
     run_params = \
         {
@@ -72,7 +80,7 @@ def main() \
             'covariates_train': covariates_train_val,
             'covariates_val': covariates_train_val
         }
-    lags_dict = {"lags_past_covariates": 60}
+    lags_dict = {"lags_past_covariates": 10}
     probabilistic_dict = {"num_samples": 100, "likelihood": "poisson"}
 
     with mlflow.start_run(run_name=f"{MODEL_NAME}-fit") as run:
